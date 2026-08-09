@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "TAPI",
+    "slug": "tapi",
+    "scheme": "tapi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#F4F2ED",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.tapi.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "app.tapi.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#14161A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#14161A",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-localization",
+      "expo-asset",
+      "expo-audio"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d3683448-4ea4-40de-b234-e117504fd947"
+      }
+    }
+  }
+}
