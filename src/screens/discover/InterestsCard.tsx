@@ -4,6 +4,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { duration, em, fonts, ON_ACCENT, radius, size } from '../../theme/tokens';
 import { Raw } from '../../ui/Text';
 import { useEnter, useFloaty } from '../../ui/motion';
+import { cue } from '../../ui/feedback';
 import { interests } from '../../data/interests';
 import { IconBell, IconCheck, IconSpark } from './icons';
 import { alertsCta, discoverCopy } from './copy';
@@ -58,7 +59,10 @@ export function InterestsCard({
           return (
             <Pressable
               key={i.id}
-              onPress={() => onToggle(i.id)}
+              onPress={() => {
+                cue('select');
+                onToggle(i.id);
+              }}
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
               style={[

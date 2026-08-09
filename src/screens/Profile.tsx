@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { cue } from '../ui/feedback';
 import Svg, { Circle } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { duration, ease, em, fonts, radius, size, space } from '../theme/tokens';
@@ -141,7 +141,7 @@ export function Profile({ onOpenStand }: { onOpenStand?: () => void } = {}) {
             <Pressable
               key={x.id}
               onPress={() => {
-                void Haptics.selectionAsync().catch(() => {});
+                cue('select');
                 setTab(x.id);
               }}
               style={styles.tab}

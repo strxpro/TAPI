@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { ALWAYS_DARK, em, fonts, ON_ACCENT, radius, size, space } from '../theme/tokens';
@@ -83,7 +82,7 @@ export function SmartStand() {
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
               onPress={() => {
-                void Haptics.selectionAsync().catch(() => {});
+                cue('select');
                 set({ color: c.id });
               }}
               style={({ pressed }) => [

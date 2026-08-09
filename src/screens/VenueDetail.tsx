@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { cue } from '../ui/feedback';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeProvider';
 import { useI18n, useT } from '../i18n/I18nProvider';
 import { em, fonts, radius, size, space } from '../theme/tokens';
@@ -49,7 +49,7 @@ export function VenueDetail({ venue, onBack }: { venue: Venue; onBack: () => voi
             </Pressable>
             <Pressable
               onPress={() => {
-                void Haptics.selectionAsync().catch(() => {});
+                cue('save');
                 setSaved((s) => !s);
               }}
               style={styles.circleBtn}

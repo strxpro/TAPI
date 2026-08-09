@@ -10,13 +10,13 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeProvider';
 import { useI18n, useT } from '../i18n/I18nProvider';
 import { duration, ease, em, fonts, ON_ACCENT, radius, size, space } from '../theme/tokens';
 import { Raw } from '../ui/Text';
 import { press, useDot, useGrowX } from '../ui/motion';
 import { Toast, useToast } from '../ui/Toast';
+import { cue } from '../ui/feedback';
 import { interests } from '../data/interests';
 import { cityEvents } from '../data/events';
 import { EmptyState } from './discover/EmptyState';
@@ -108,6 +108,7 @@ export function Discover({
     .map((i) => pick(lang, i.pl, i.en, i.it));
 
   const pickSuggestion = (s: Suggestion) => {
+    cue('select');
     if (s.action.type === 'venue') {
       onOpenVenue(s.action.id);
       return;
@@ -118,13 +119,14 @@ export function Discover({
   };
 
   const toggleSaved = (id: string) => {
-    void Haptics.selectionAsync().catch(() => {});
+    cue('save');
     const has = savedIds.includes(id);
     setSavedIds(has ? savedIds.filter((x) => x !== id) : savedIds.concat(id));
     toast(has ? c.venueUnsaved : c.venueSaved);
   };
 
   const toggleSavedEvent = (id: string) => {
+    cue('save');
     const has = savedEvents.includes(id);
     setSavedEvents(has ? savedEvents.filter((x) => x !== id) : savedEvents.concat(id));
     toast(has ? c.evUnsaved : c.evSaved);
@@ -132,6 +134,7 @@ export function Discover({
 
   const saveInterests = () => {
     if (!chosen.length) return;
+    cue('success');
     setInterestsSaved(true);
     toast(c.intSaved);
   };
@@ -192,12 +195,18 @@ export function Discover({
 
           {/* Planer siedzi tuż pod wyszukiwarką — to pierwsza rzecz,
               którą gość ma zobaczyć po wpisaniu albo niewpisaniu niczego. */}
-          <PlannerBanner onPress={onOpenPlanner} />
+          <PlannerBanner
+            onPress={() => {
+              cue('select');
+              onOpenPlanner();
+            }}
+          />
 
           <InterestsRow
             outlined={!interestsSaved}
             sub={interestsSaved && chosenLabels.length ? chosenLabels.join(' · ') : c.intBtnSub}
             onPress={() => {
+              cue('select');
               setInterestsSaved(false);
               setInterestsOpen(true);
             }}
@@ -211,7 +220,7 @@ export function Discover({
           query={query}
           onQuery={setQuery}
           onOpen={() => {
-            void Haptics.selectionAsync().catch(() => {});
+            cue('select');
             setHeadSearch(true);
           }}
           // `closeHeadSearch` czyści też zapytanie — obie wyszukiwarki
@@ -307,7 +316,10 @@ export function Discover({
                 return (
                   <Pressable
                     key={w.id}
-                    onPress={() => setWhen(w.id)}
+                    onPress={() => {
+                      cue('select');
+                      setWhen(w.id);
+                    }}
                     accessibilityRole="button"
                     accessibilityState={{ selected: on }}
                     style={({ pressed }) => [

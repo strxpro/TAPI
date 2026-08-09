@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -108,13 +108,17 @@ function Shell() {
    * stuknięcie i przesunięcie palcem czują się tak samo i nie ma sytuacji,
    * w której jedno gra dźwiękiem, a drugie nie.
    */
+  // Bieżąca zakładka czytana z refa, żeby `setTab` mogło powstać raz.
+  const tabRef = useRef(tab);
+  tabRef.current = tab;
+
   const setTab = useCallback((next: Tab) => {
-    setTabState((current) => {
-      if (next === current) return current;
-      cue('tab');
-      setWarmup(next === 'discover');
-      return next;
-    });
+    if (next === tabRef.current) return;
+    // Drgnięcie i dźwięk wołamy tu, a nie w funkcji aktualizującej stan —
+    // tamtą React może uruchomić dwa razy i efekt poszedłby podwójnie.
+    cue('tab');
+    setWarmup(next === 'discover');
+    setTabState(next);
     // Dotknięcie paska zamyka to, co leżało na wierzchu.
     setOpenVenue(null);
     setPlanner(false);

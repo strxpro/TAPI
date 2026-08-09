@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
+import { cue } from '../ui/feedback';
 import Svg, { Path, Rect } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeProvider';
 import { useT } from '../i18n/I18nProvider';
 import { duration, ease, em, fonts, size } from '../theme/tokens';
@@ -204,7 +204,7 @@ export function Auth({
         {/* pomiń — linia 223 */}
         <Pressable
           onPress={() => {
-            void Haptics.selectionAsync().catch(() => {});
+            cue('select');
             onSkip();
           }}
           accessibilityRole="button"

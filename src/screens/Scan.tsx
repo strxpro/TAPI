@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
+import { cue } from '../ui/feedback';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeProvider';
 import { useT } from '../i18n/I18nProvider';
 import { ALWAYS_DARK, ease, em, fonts, size } from '../theme/tokens';
@@ -158,7 +158,8 @@ export function Scan() {
           />
           <Pressable
             onPress={() => {
-              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+              // skan to moment nagrody — pełne drgnięcie i ping
+              cue('ping');
             }}
             accessibilityRole="button"
             style={({ pressed }) => [

@@ -113,8 +113,13 @@ function ensureAudio() {
   audioReady = true;
   // Dźwięki interfejsu nie mogą uciszać muzyki gościa ani przerywać
   // nagrywania — dlatego tryb „mieszaj z innymi".
+  //
+  // `playsInSilentMode: true` jest tu świadome. Przy `false` iPhone
+  // z przełącznikiem ciszy nie gra **nic**, a tak stoi większość telefonów
+  // przez większość czasu — dźwięki byłyby wtedy funkcją, której nikt nigdy
+  // nie usłyszy. Gość i tak może je wyłączyć w szybkich ustawieniach.
   void setAudioModeAsync({
-    playsInSilentMode: false,
+    playsInSilentMode: true,
     interruptionMode: 'mixWithOthers',
     shouldRouteThroughEarpiece: false,
   }).catch(() => {});
@@ -127,11 +132,20 @@ function play(name: keyof typeof SOUNDS, volume: number) {
     let player = players.get(name);
     if (!player) {
       player = createAudioPlayer(SOUNDS[name]);
+      player.loop = false;
       players.set(name, player);
     }
     player.volume = volume;
-    player.seekTo(0);
-    player.play();
+
+    // `seekTo` jest asynchroniczne. Wołanie `play()` od razu po nim znaczyło,
+    // że po pierwszym odtworzeniu głowica stoi na końcu pliku i każde kolejne
+    // stuknięcie grało ciszę. Dlatego gramy dopiero po przewinięciu, a gdy
+    // przewinięcie się nie uda — i tak próbujemy zagrać.
+    const start = player;
+    void start
+      .seekTo(0)
+      .then(() => start.play())
+      .catch(() => start.play());
   } catch {
     // Brak dźwięku nie może wywrócić interakcji.
   }

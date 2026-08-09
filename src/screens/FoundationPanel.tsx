@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import * as Haptics from 'expo-haptics';
+import { cue } from '../ui/feedback';
 import { useTheme, type ThemeMode } from '../theme/ThemeProvider';
 import { useI18n, useT } from '../i18n/I18nProvider';
 import { LANGS, LANG_LABEL, type Lang } from '../i18n/dict';
@@ -16,7 +16,7 @@ export function FoundationPanel() {
   const t = useT();
 
   const at = theme.dark ? accent.text : accent.hex;
-  const tap = () => void Haptics.selectionAsync().catch(() => {});
+  const tap = () => cue('select');
 
   const MODES: { id: ThemeMode; label: string }[] = [
     { id: 'papier', label: 'Papier' },
