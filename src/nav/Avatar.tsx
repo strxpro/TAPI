@@ -9,10 +9,12 @@ import { Raw } from '../ui/Text';
 import { press } from '../ui/motion';
 import {
   cue,
+  feedbackStatus,
   isHapticEnabled,
   isSoundEnabled,
   setHapticEnabled,
   setSoundEnabled,
+  type Cue,
 } from '../ui/feedback';
 import type { ThemeMode } from '../theme/ThemeProvider';
 import type { AccentName } from '../theme/tokens';
@@ -246,6 +248,24 @@ function QuickSettings({ open, onClose }: { open: boolean; onClose: () => void }
               }}
             />
 
+            {/* ── sprawdzenie czucia ── */}
+            <Raw style={[styles.head, { color: theme.sub }]}>
+              {l3('Sprawdź', 'Test it', 'Prova')}
+            </Raw>
+            <View style={styles.row}>
+              {(
+                [
+                  ['tab', l3('Stuknięcie', 'Tap', 'Tocco')],
+                  ['save', l3('Zapis', 'Save', 'Salva')],
+                  ['ping', l3('Ping', 'Ping', 'Ping')],
+                  ['success', l3('Gotowe', 'Done', 'Fatto')],
+                ] as [Cue, string][]
+              ).map(([kind, label]) => (
+                <Choice key={kind} label={label} on={false} onPress={() => cue(kind)} />
+              ))}
+            </View>
+            <Diagnostics />
+
             <Pressable
               onPress={onClose}
               accessibilityRole="button"
@@ -261,6 +281,62 @@ function QuickSettings({ open, onClose }: { open: boolean; onClose: () => void }
         </Animated.View>
       </View>
     </Modal>
+  );
+}
+
+/**
+ * Krótki odczyt stanu czucia.
+ *
+ * „Nie czuję nic" znaczy co innego na symulatorze, co innego przy wyłączonych
+ * wibracjach dotykowych w systemie, a jeszcze co innego przy błędzie modułu.
+ * Zamiast zgadywać z zewnątrz — aplikacja mówi to sama.
+ */
+function Diagnostics() {
+  const { theme, accentText } = useTheme();
+  const { l3 } = useI18n();
+  const [status, setStatus] = useState(feedbackStatus);
+
+  // Odświeżamy co sekundę, bo stan zmienia się dopiero po pierwszej próbie.
+  useEffect(() => {
+    const id = setInterval(() => setStatus(feedbackStatus()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const mark = (v: boolean | null) => (v === null ? '—' : v ? '✓' : '✕');
+  const tone = (v: boolean | null) => (v === null ? theme.sub : v ? accentText : '#B65C36');
+
+  const rows: [string, boolean | null][] = [
+    [l3('Wibracje odpowiadają', 'Haptics respond', 'Le vibrazioni rispondono'), status.hapticsWork],
+    [l3('Dźwięk odpowiada', 'Sound responds', 'Il suono risponde'), status.audioWorks],
+  ];
+
+  return (
+    <View style={[styles.diag, { borderColor: theme.hair }]}>
+      {rows.map(([label, ok]) => (
+        <View key={label} style={styles.diagRow}>
+          <Raw style={[styles.diagLabel, { color: theme.sub }]}>{label}</Raw>
+          <Raw style={[styles.diagMark, { color: tone(ok) }]}>{mark(ok)}</Raw>
+        </View>
+      ))}
+      <Raw style={[styles.diagNote, { color: theme.sub }]}>
+        {status.emulator
+          ? l3(
+              'To symulator — wibracji nie ma tu fizycznie. Sprawdź na telefonie.',
+              'This is a simulator — there is no vibration hardware. Try a real phone.',
+              'Questo è un simulatore — non c’è vibrazione. Prova su un telefono.',
+            )
+          : l3(
+              `${status.platform} · wczytane dźwięki: ${status.soundsLoaded} z 3`,
+              `${status.platform} · sounds loaded: ${status.soundsLoaded} of 3`,
+              `${status.platform} · suoni caricati: ${status.soundsLoaded} su 3`,
+            )}
+      </Raw>
+      {(status.hapticError || status.audioError) && (
+        <Raw numberOfLines={3} style={[styles.diagNote, { color: '#B65C36' }]}>
+          {status.hapticError ?? status.audioError}
+        </Raw>
+      )}
+    </View>
   );
 }
 
@@ -402,6 +478,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   swatch: { width: 26, height: 26, borderRadius: radius.pill },
+  diag: { marginTop: 9, padding: 13, borderRadius: radius.card16, borderWidth: 1, borderStyle: 'dashed', gap: 5 },
+  diagRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  diagLabel: { fontFamily: fonts.sans, fontSize: size.s115 },
+  diagMark: { fontFamily: fonts.sansBold, fontSize: size.s135 },
+  diagNote: { fontFamily: fonts.sans, fontSize: size.s105, lineHeight: size.s105 * 1.45, marginTop: 3 },
   toggle: {
     flexDirection: 'row',
     alignItems: 'center',

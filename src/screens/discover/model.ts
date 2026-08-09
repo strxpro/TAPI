@@ -43,10 +43,10 @@ export function catLabel(lang: Lang, plLabel: string): string {
 /* ──────────────────────────────────────────────────────────── lista lokali ── */
 
 /** Jedyne zawężenie listy: to, co gość wpisał w wyszukiwarkę. */
-export function searchVenues(query: string): Venue[] {
+export function searchVenues(query: string, list: Venue[] = venues): Venue[] {
   const q = query.trim().toLowerCase();
-  if (!q) return venues;
-  return venues.filter((v) =>
+  if (!q) return list;
+  return list.filter((v) =>
     (v.name + ' ' + v.catLabel + ' ' + v.district).toLowerCase().includes(q),
   );
 }
@@ -159,12 +159,12 @@ export const districts: string[] = venues
 
 /* ────────────────────────────────────────────────────────────── wydarzenia ── */
 
-export function filterEvents(when: WhenId): CityEvent[] {
-  if (when === 'tom') return cityEvents.filter((e) => e.d <= 1);
-  if (when === 'week') return cityEvents.filter((e) => e.d >= 3 && e.d <= 5);
-  if (when === 'next') return cityEvents.filter((e) => e.d >= 6 && e.d <= 9);
-  if (when === 'free') return cityEvents.filter((e) => e.price === 0);
-  return cityEvents;
+export function filterEvents(when: WhenId, list: CityEvent[] = cityEvents): CityEvent[] {
+  if (when === 'tom') return list.filter((e) => e.d <= 1);
+  if (when === 'week') return list.filter((e) => e.d >= 3 && e.d <= 5);
+  if (when === 'next') return list.filter((e) => e.d >= 6 && e.d <= 9);
+  if (when === 'free') return list.filter((e) => e.price === 0);
+  return list;
 }
 
 export function whenOptions(lang: Lang): { id: WhenId; label: string }[] {

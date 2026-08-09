@@ -18,7 +18,7 @@ import { press, useDot, useGrowX } from '../ui/motion';
 import { Toast, useToast } from '../ui/Toast';
 import { cue } from '../ui/feedback';
 import { interests } from '../data/interests';
-import { cityEvents } from '../data/events';
+import { useCatalog } from '../lib/catalog';
 import { EmptyState } from './discover/EmptyState';
 import { InterestsCard } from './discover/InterestsCard';
 import { EventRow, TodayCardView, VenueRow } from './discover/cards';
@@ -81,6 +81,9 @@ export function Discover({
   const c = discoverCopy[lang];
   const { message, toast } = useToast();
 
+  // Lokale i wydarzenia z bazy, z zapasem w pliku — patrz src/lib/catalog.ts
+  const catalog = useCatalog();
+
   const [query, setQuery] = useState('');
   const [savedIds, setSavedIds] = useState<string[]>(['brama']);
   const [savedEvents, setSavedEvents] = useState<string[]>([]);
@@ -98,10 +101,10 @@ export function Discover({
     return () => clearTimeout(id);
   }, [warmup]);
 
-  const list = useMemo(() => searchVenues(query), [query]);
+  const list = useMemo(() => searchVenues(query, catalog.venues), [query, catalog.venues]);
   const suggestions = useMemo(() => suggestFor(lang, query, c), [lang, query, c]);
   const cards = useMemo(() => todayCards(lang), [lang]);
-  const events = useMemo(() => filterEvents(when), [when]);
+  const events = useMemo(() => filterEvents(when, catalog.events), [when, catalog.events]);
 
   const chosenLabels = interests
     .filter((i) => chosen.includes(i.id))
@@ -302,7 +305,7 @@ export function Discover({
               title={c.evHead}
               right={
                 <Raw style={[styles.headMetaTight, { color: theme.sub }]}>
-                  {eventCount(lang, cityEvents.length)}
+                  {eventCount(lang, catalog.events.length)}
                 </Raw>
               }
             />

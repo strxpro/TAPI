@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Vibration } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import * as Device from 'expo-device';
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -37,33 +38,53 @@ const SOUNDS = {
 
 type SoundName = keyof typeof SOUNDS | null;
 
-/** Co dany zamiar robi: jakie drgnięcie i jaki dźwięk. */
-const CUES: Record<Cue, { haptic: () => Promise<void>; sound: SoundName; volume: number }> = {
-  select: { haptic: () => Haptics.selectionAsync(), sound: null, volume: 0 },
-  tab: {
+/**
+ * Co dany zamiar robi: jakie drgnięcie, jaki dźwięk i ile milisekund wibracji
+ * na wypadek, gdyby haptyka nie odpowiedziała.
+ *
+ * Uwaga na siłę: `selectionAsync` i `Light` to na wielu Androidach drgnięcie
+ * tak delikatne, że w ruchu go nie czuć. Dlatego wybór dostaje `Light`,
+ * a rzeczy, które coś zmieniają — `Medium`.
+ */
+const CUES: Record<
+  Cue,
+  { haptic: () => Promise<void>; sound: SoundName; volume: number; ms: number }
+> = {
+  select: {
     haptic: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
+    sound: null,
+    volume: 0,
+    ms: 10,
+  },
+  tab: {
+    haptic: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
     sound: 'tap',
     volume: 0.32,
+    ms: 18,
   },
   save: {
-    haptic: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
+    haptic: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
     sound: 'tap',
     volume: 0.45,
+    ms: 20,
   },
   ping: {
     haptic: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
     sound: 'ping',
     volume: 0.7,
+    ms: 34,
   },
   success: {
     haptic: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
     sound: 'success',
     volume: 0.6,
+    ms: 30,
   },
   error: {
     haptic: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error),
     sound: null,
     volume: 0,
+    ms: 40,
   },
 };
 
@@ -135,6 +156,7 @@ function play(name: keyof typeof SOUNDS, volume: number) {
       player.loop = false;
       players.set(name, player);
     }
+    audioWorks = true;
     player.volume = volume;
 
     // `seekTo` jest asynchroniczne. Wołanie `play()` od razu po nim znaczyło,
@@ -146,8 +168,11 @@ function play(name: keyof typeof SOUNDS, volume: number) {
       .seekTo(0)
       .then(() => start.play())
       .catch(() => start.play());
-  } catch {
-    // Brak dźwięku nie może wywrócić interakcji.
+  } catch (err) {
+    // Brak dźwięku nie może wywrócić interakcji — ale zapamiętujemy powód,
+    // żeby dało się go pokazać w ustawieniach zamiast zgadywać.
+    audioWorks = false;
+    lastAudioError = String(err);
   }
 }
 
@@ -157,11 +182,36 @@ function play(name: keyof typeof SOUNDS, volume: number) {
  */
 export function cue(kind: Cue) {
   const def = CUES[kind];
-  if (hapticOn) {
-    // Haptyka na Androidzie potrafi rzucić przy braku uprawnienia do wibracji.
-    void def.haptic().catch(() => {});
-  }
+  if (hapticOn) buzz(def);
   if (def.sound) play(def.sound, def.volume);
+}
+
+/**
+ * Drgnięcie z zabezpieczeniem.
+ *
+ * `expo-haptics` na części Androidów odrzuca wywołanie (brak silnika, wyłączone
+ * wibracje dotykowe w ustawieniach systemu, starsze API). Wtedy schodzimy do
+ * surowej wibracji z React Native — mniej subtelna, ale zawsze wyczuwalna.
+ * Na iOS zejścia nie ma: `Vibration` włącza tam pełne dzwonienie, co przy
+ * stuknięciu w zakładkę byłoby karykaturą.
+ */
+function buzz(def: { haptic: () => Promise<void>; ms: number }) {
+  def
+    .haptic()
+    .then(() => {
+      hapticsWork = true;
+    })
+    .catch((err) => {
+      hapticsWork = false;
+      lastHapticError = String(err);
+      if (Platform.OS === 'android') {
+        try {
+          Vibration.vibrate(def.ms);
+        } catch {
+          /* nie ma czym drgnąć — trudno */
+        }
+      }
+    });
 }
 
 /** Wstępne wczytanie plików, żeby pierwsze stuknięcie nie było głuche. */
@@ -198,5 +248,46 @@ export function useFeedbackWarmUp() {
   }, []);
 }
 
-/** Czy w ogóle da się drgnąć — na symulatorze i w sieci nie ma czym. */
-export const hapticsAvailable = Platform.OS === 'ios' || Platform.OS === 'android';
+/* ────────────────────────────────────────────────────────────── diagnostyka ── */
+
+/**
+ * Stan czucia. „Nie czuję nic" może znaczyć trzy różne rzeczy: wyłączone
+ * w ustawieniach aplikacji, wyłączone w systemie albo brak modułu. Bez
+ * odczytu z telefonu nie da się tego rozróżnić, więc aplikacja mówi to sama.
+ */
+let hapticsWork: boolean | null = null;
+let audioWorks: boolean | null = null;
+let lastHapticError: string | null = null;
+let lastAudioError: string | null = null;
+
+export type FeedbackStatus = {
+  platform: string;
+  /** czy symulator — tam haptyki nie ma fizycznie */
+  emulator: boolean;
+  soundEnabled: boolean;
+  hapticEnabled: boolean;
+  /** null = jeszcze nie próbowano */
+  hapticsWork: boolean | null;
+  audioWorks: boolean | null;
+  soundsLoaded: number;
+  hapticError: string | null;
+  audioError: string | null;
+};
+
+export function feedbackStatus(): FeedbackStatus {
+  return {
+    platform: Platform.OS,
+    emulator: !Device.isDevice,
+    soundEnabled: soundOn,
+    hapticEnabled: hapticOn,
+    hapticsWork,
+    audioWorks,
+    soundsLoaded: players.size,
+    hapticError: lastHapticError,
+    audioError: lastAudioError,
+  };
+}
+
+/** Czy w ogóle da się drgnąć — na symulatorze nie ma czym. */
+export const hapticsAvailable =
+  (Platform.OS === 'ios' || Platform.OS === 'android') && Device.isDevice;
