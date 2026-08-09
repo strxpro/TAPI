@@ -248,3 +248,10 @@ create table public.stand_orders (
 alter table public.stand_orders enable row level security;
 create policy "swoje zamówienia" on public.stand_orders
   for all using (auth.uid() = user_id);
+
+-- Funkcja triggera nie ma powodu być wywoływalna z zewnątrz. Jako
+-- SECURITY DEFINER wystawiona przez /rest/v1/rpc pozwalałaby dopisać wiersz
+-- do `profiles` z pominięciem RLS — linter Supabase słusznie to wyłapuje.
+revoke execute on function public.handle_new_user() from public;
+revoke execute on function public.handle_new_user() from anon;
+revoke execute on function public.handle_new_user() from authenticated;
