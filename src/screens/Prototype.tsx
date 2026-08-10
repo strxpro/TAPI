@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { cue, useFeedbackWarmUp, type Cue } from '../ui/feedback';
+import { BRIDGE_SCRIPT, isBridgeRequest } from '../bridge/protocol';
+import { HANDLERS } from '../bridge/handlers';
 import { Asset } from 'expo-asset';
 // SDK 54 wycofało `readAsStringAsync` z głównego wejścia modułu i rzuca
 // wyjątkiem przy próbie użycia. Stara wersja jest nadal dostarczana pod
@@ -138,22 +140,45 @@ export function Prototype() {
    * przełączniki w ustawieniach.
    */
   const onMessage = useCallback((event: WebViewMessageEvent) => {
+    let msg: unknown;
     try {
-      const msg = JSON.parse(event.nativeEvent.data) as { type?: string; kind?: string };
-      if (msg.type !== 'haptic') return;
-
-      const map: Record<string, Cue> = {
-        // skan naklejki i odbiór nagrody — moment, w którym ping ma sens
-        success: 'ping',
-        medium: 'tab',
-        warning: 'save',
-        error: 'error',
-        light: 'select',
-      };
-      cue(map[msg.kind ?? 'light'] ?? 'select');
+      msg = JSON.parse(event.nativeEvent.data);
     } catch {
-      // Wiadomości spoza naszego mostu ignorujemy po cichu.
+      return; // Wiadomości spoza naszego mostu ignorujemy po cichu.
     }
+
+    // ── zapytanie przez most: strona prosi, my robimy naprawdę ──
+    if (isBridgeRequest(msg)) {
+      const handler = HANDLERS[msg.method];
+      const reply = (ok: boolean, data: unknown) =>
+        webRef.current?.injectJavaScript(
+          `window.__tapiReply(${msg.id}, ${ok}, ${JSON.stringify(data)}); true;`,
+        );
+
+      if (!handler) {
+        reply(false, { message: `Nieznana metoda: ${msg.method}` });
+        return;
+      }
+
+      handler(msg.params ?? {})
+        .then((data) => reply(true, data))
+        .catch((err) => reply(false, { message: String(err?.message ?? err) }));
+      return;
+    }
+
+    // ── stary most haptyczny: prototyp woła `buzz(ms, kind)` ──
+    const m = msg as { type?: string; kind?: string };
+    if (m.type !== 'haptic') return;
+
+    const map: Record<string, Cue> = {
+      // skan naklejki i odbiór nagrody — moment, w którym ping ma sens
+      success: 'ping',
+      medium: 'tab',
+      warning: 'save',
+      error: 'error',
+      light: 'select',
+    };
+    cue(map[m.kind ?? 'light'] ?? 'select');
   }, []);
 
   useEffect(() => {
@@ -205,8 +230,8 @@ export function Prototype() {
         source={{ html, baseUrl: 'https://tapi.local' }}
         originWhitelist={['*']}
         style={styles.web}
-        injectedJavaScript={INJECTED}
-        onLoadEnd={() => webRef.current?.injectJavaScript(INJECTED)}
+        injectedJavaScript={BRIDGE_SCRIPT + INJECTED}
+        onLoadEnd={() => webRef.current?.injectJavaScript(BRIDGE_SCRIPT + INJECTED)}
         ref={webRef}
         onMessage={onMessage}
         scalesPageToFit={false}

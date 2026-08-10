@@ -1,0 +1,252 @@
+import { supabase, hasBackend } from '../lib/supabase';
+import { planDay, searchPlaces, geocode, reverseGeocode } from '../lib/api';
+import { cue, type Cue } from '../ui/feedback';
+
+/**
+ * Co potrafi most.
+ *
+ * Każda pozycja to jedna rzecz, której strona nie zrobi sama: konto, baza,
+ * model AI, mapy. Wygląd zostaje w prototypie — tu jest wyłącznie silnik.
+ *
+ * Zasada dla wszystkich: nie rzucamy niczego, czego strona nie umiałaby
+ * obsłużyć. Błąd wraca jako `{ error }`, a nie jako wywrócony most.
+ */
+
+type Params = Record<string, unknown>;
+type Handler = (params: Params) => Promise<unknown>;
+
+const str = (v: unknown, fallback = '') => (typeof v === 'string' ? v : fallback);
+const num = (v: unknown, fallback = 0) => (typeof v === 'number' ? v : fallback);
+
+/* ─────────────────────────────────────────────────────────────── konto ── */
+
+/**
+ * Logowanie kodem z e-maila. Supabase wysyła sześciocyfrowy kod, dokładnie
+ * jak ścieżka w prototypie: adres → kod → konto gotowe.
+ *
+ * `shouldCreateUser: true` znaczy, że rejestracja i logowanie to jedno
+ * wejście — nie ma osobnej podzakładki „załóż konto".
+ */
+const authSendCode: Handler = async (p) => {
+  const email = str(p.email).trim();
+  if (!email.includes('@')) return { error: 'Podaj poprawny adres e-mail' };
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true,
+      // Konto firmowe rozpoznajemy od pierwszego wejścia — trafia do profilu
+      // przez wyzwalacz `handle_new_user`.
+      data: { is_business: p.business === true },
+    },
+  });
+  return error ? { error: error.message } : { sent: true };
+};
+
+const authVerifyCode: Handler = async (p) => {
+  const email = str(p.email).trim();
+  const token = str(p.code).trim();
+  if (token.length < 6) return { error: 'Kod ma sześć cyfr' };
+
+  const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
+  if (error) return { error: error.message };
+
+  // Znacznik firmy z metadanych wchodzi do profilu przy pierwszym logowaniu.
+  if (p.business === true && data.user) {
+    await supabase.from('profiles').update({ is_business: true }).eq('id', data.user.id);
+  }
+  return sessionShape();
+};
+
+const authGoogle: Handler = async () => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { skipBrowserRedirect: true, redirectTo: 'tapi://auth' },
+  });
+  if (error) return { error: error.message };
+  // Adres otwiera warstwa natywna — strona nie ma jak pokazać okna zgody.
+  return { url: data.url };
+};
+
+const authSignOut: Handler = async () => {
+  await supabase.auth.signOut();
+  return { ok: true };
+};
+
+async function sessionShape() {
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return { user: null };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, email, city, is_business, lang')
+    .eq('id', data.user.id)
+    .maybeSingle();
+
+  return {
+    user: {
+      id: data.user.id,
+      email: data.user.email ?? profile?.email ?? '',
+      name: profile?.name ?? data.user.user_metadata?.full_name ?? '',
+      city: profile?.city ?? 'Kraków',
+      isBusiness: profile?.is_business ?? false,
+    },
+  };
+}
+
+/* ──────────────────────────────────────────────────────────────── baza ── */
+
+const dbVenues: Handler = async () => {
+  const { data, error } = await supabase.from('venues').select('*').order('rating', { ascending: false });
+  return error ? { error: error.message } : { venues: data ?? [] };
+};
+
+const dbEvents: Handler = async () => {
+  const { data, error } = await supabase.from('events').select('*').order('starts_at');
+  return error ? { error: error.message } : { events: data ?? [] };
+};
+
+const dbToggleSaved: Handler = async (p) => {
+  const venueId = str(p.venueId);
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return { error: 'Trzeba być zalogowanym' };
+
+  const { data: existing } = await supabase
+    .from('saved_venues')
+    .select('venue_id')
+    .eq('user_id', u.user.id)
+    .eq('venue_id', venueId)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from('saved_venues').delete().eq('user_id', u.user.id).eq('venue_id', venueId);
+    return { saved: false };
+  }
+  await supabase.from('saved_venues').insert({ user_id: u.user.id, venue_id: venueId });
+  return { saved: true };
+};
+
+/* ────────────────────────────────────────────────────── pokoje wieczoru ── */
+
+const roomsJoin: Handler = async (p) => {
+  const code = str(p.code).trim();
+  if (code.length < 4) return { error: 'Kod ma co najmniej cztery znaki' };
+  const { data, error } = await supabase.rpc('join_room', { room_code: code });
+  return error ? { error: error.message } : { room: data?.[0] ?? null };
+};
+
+const roomsMine: Handler = async () => {
+  const { data, error } = await supabase
+    .from('rooms')
+    .select('id, code, name, reveal_at, starts_at')
+    .order('starts_at', { ascending: false });
+  return error ? { error: error.message } : { rooms: data ?? [] };
+};
+
+/**
+ * Zdjęcia pokoju. Reguła „cudze dopiero nazajutrz" siedzi w RLS bazy, więc
+ * tutaj nie ma czego sprawdzać — baza po prostu nie odda tego, czego jeszcze
+ * nie wolno pokazać.
+ */
+const roomsPhotos: Handler = async (p) => {
+  const roomId = str(p.roomId);
+  const { data, error } = await supabase
+    .from('room_photos')
+    .select('id, user_id, storage_path, caption, created_at')
+    .eq('room_id', roomId)
+    .order('created_at');
+  return error ? { error: error.message } : { photos: data ?? [] };
+};
+
+const roomsSend: Handler = async (p) => {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return { error: 'Trzeba być zalogowanym' };
+
+  const { error } = await supabase.from('room_messages').insert({
+    room_id: str(p.roomId),
+    user_id: u.user.id,
+    kind: str(p.kind, 'text'),
+    body: str(p.body) || null,
+    payload: (p.payload as object) ?? null,
+  });
+  return error ? { error: error.message } : { sent: true };
+};
+
+const roomsMessages: Handler = async (p) => {
+  const { data, error } = await supabase
+    .from('room_messages')
+    .select('id, user_id, kind, body, payload, created_at')
+    .eq('room_id', str(p.roomId))
+    .order('created_at');
+  return error ? { error: error.message } : { messages: data ?? [] };
+};
+
+/* ────────────────────────────────────────────────────── planer i mapy ── */
+
+const aiPlanDay: Handler = async (p) => {
+  const plan = await planDay({
+    days: num(p.days, 1),
+    budget: typeof p.budget === 'number' ? p.budget : null,
+    pace: (str(p.pace, 'normal') as 'spokojne' | 'normal' | 'intensywne') ?? 'normal',
+    who: str(p.who, 'solo'),
+    interests: Array.isArray(p.interests) ? (p.interests as string[]) : [],
+    lang: (str(p.lang, 'pl') as 'pl' | 'en' | 'it') ?? 'pl',
+    city: str(p.city, 'Kraków'),
+  });
+  return plan ? { plan } : { error: 'Planer chwilowo niedostępny' };
+};
+
+const mapsSearch: Handler = async (p) => ({
+  results: await searchPlaces(
+    str(p.query),
+    typeof p.lat === 'number' && typeof p.lng === 'number'
+      ? { lat: p.lat as number, lng: p.lng as number }
+      : undefined,
+  ),
+});
+
+const mapsGeocode: Handler = async (p) => ({ result: await geocode(str(p.address)) });
+const mapsReverse: Handler = async (p) => ({
+  result: await reverseGeocode(num(p.lat), num(p.lng)),
+});
+
+/* ─────────────────────────────────────────────────────────────── czucie ── */
+
+/** Prototyp woła to zamiast `navigator.vibrate`, którego iPhone nie ma. */
+const feel: Handler = async (p) => {
+  cue(str(p.kind, 'select') as Cue);
+  return { ok: true };
+};
+
+/* ────────────────────────────────────────────────────────────── katalog ── */
+
+export const HANDLERS: Record<string, Handler> = {
+  'auth.session': sessionShape,
+  'auth.sendCode': authSendCode,
+  'auth.verifyCode': authVerifyCode,
+  'auth.google': authGoogle,
+  'auth.signOut': authSignOut,
+
+  'db.venues': dbVenues,
+  'db.events': dbEvents,
+  'db.toggleSaved': dbToggleSaved,
+
+  'rooms.join': roomsJoin,
+  'rooms.mine': roomsMine,
+  'rooms.photos': roomsPhotos,
+  'rooms.messages': roomsMessages,
+  'rooms.send': roomsSend,
+
+  'ai.planDay': aiPlanDay,
+
+  'maps.search': mapsSearch,
+  'maps.geocode': mapsGeocode,
+  'maps.reverse': mapsReverse,
+
+  feel,
+};
+
+/** Nazwy do podglądu w diagnostyce. */
+export const BRIDGE_METHODS = Object.keys(HANDLERS);
