@@ -55,7 +55,7 @@ const INJECTED = `
       'html,body{height:100%;display:block!important;margin:0;padding:0;' +
       'background:#F4F2ED;overscroll-behavior:none;-webkit-user-select:none;' +
       'user-select:none;-webkit-tap-highlight-color:transparent;' +
-      'touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%;' +
+      'touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%;' +
       '-webkit-font-smoothing:antialiased;transform:translateZ(0);}' +
       'div[style*="402px"][style*="874px"]{' +
       'width:100vw!important;height:100dvh!important;max-width:none!important;' +
@@ -110,8 +110,31 @@ const INJECTED = `
     return false;
   }
 
+  /* iOS honoruje maximum-scale tylko częściowo — szczypanie dwoma palcami
+     i dwuklik nadal potrafią powiększyć stronę. Blokujemy je wprost. */
+  function blockZoom() {
+    if (window.__tapiNoZoom) return;
+    window.__tapiNoZoom = true;
+
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (name) {
+      document.addEventListener(name, function (e) { e.preventDefault(); }, { passive: false });
+    });
+
+    document.addEventListener('touchmove', function (e) {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+
+    var last = 0;
+    document.addEventListener('touchend', function (e) {
+      var now = Date.now();
+      if (now - last < 320) e.preventDefault();
+      last = now;
+    }, { passive: false });
+  }
+
   styles();
   lockZoom();
+  blockZoom();
   if (!fit()) {
     var obs = new MutationObserver(function () {
       if (fit()) obs.disconnect();
@@ -243,6 +266,11 @@ export function Prototype() {
         allowsInlineMediaPlayback
         textZoom={100}
         setSupportMultipleWindows={false}
+        // Nic nie ma się powiększać: ani szczypaniem, ani dwuklikiem, ani
+        // przyciskami zoomu Androida. Sam `maximum-scale` w meta nie wystarcza,
+        // bo WebView potrafi go zignorować.
+        setBuiltInZoomControls={false}
+        setDisplayZoomControls={false}
         javaScriptEnabled
         domStorageEnabled
         androidLayerType="hardware"

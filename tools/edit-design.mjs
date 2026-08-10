@@ -32,6 +32,62 @@ const js = (code) =>
 /** Lista zmian. Każda musi trafić dokładnie tyle razy, ile deklaruje `count`. */
 const EDITS = [
   {
+    name: 'Czucie: usunięcie drugiej definicji `buzz`, która kasowała most',
+    why:
+      'Klasa definiowała `buzz` dwa razy. Druga definicja — z samym ' +
+      '`navigator.vibrate` — nadpisywała pierwszą, tę wysyłającą sygnał do ' +
+      'warstwy natywnej, bo w klasach JavaScriptu wygrywa późniejsza metoda. ' +
+      'Przez to aplikacja nigdy nie dostawała sygnału i nie było ani wibracji, ' +
+      'ani dźwięku. W WebView `navigator.vibrate` i tak nie działa.',
+    from: js(`  buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (err) {} }\n`),
+    to: '',
+    count: 1,
+  },
+  {
+    name: 'Firma: od razu rejestracja, bez przełącznika zakładek',
+    why:
+      'Ekran otwierał się na „Zaloguj się", a wejście dla nowego lokalu było ' +
+      'schowane w drugiej zakładce. Teraz otwiera się od razu rejestracja, ' +
+      'a logowanie e-mailem jest dostępne z panelu głównego.',
+    from: js(`    bizLoginTab: 'login',`),
+    to: js(`    bizLoginTab: 'register',`),
+    count: 1,
+  },
+  {
+    name: 'Firma: ukrycie przełącznika zakładek',
+    why:
+      'Sam przełącznik przestaje mieć sens, gdy jest jedna droga. Zostaje ' +
+      'w kodzie, ale się nie pokazuje — gdyby wrócił, wystarczy zdjąć warunek.',
+    from: js(`        <!-- Przełącznik Zakładek: Zaloguj się jako firma | Zarejestruj lokal -->
+        <div style="padding: 6px 16px 14px;">`),
+    to: js(`        <!-- Przełącznik Zakładek: ukryty — wejście prowadzi wprost do rejestracji -->
+        <div style="display: none; padding: 6px 16px 14px;">`),
+    count: 1,
+  },
+  {
+    name: 'Firma: awatar znika przy rejestracji lokalu',
+    why:
+      'Pływający awatar gościa wchodził w ekran zakładania konta firmowego — ' +
+      'nie ma tam czego pokazywać, bo konta jeszcze nie ma.',
+    from: js(`      showAvatar: (st.phase === 'app' || st.phase === 'biz') && st.tab !== 'scan' && !anyOverlay,`),
+    to: js(`      showAvatar: st.phase === 'app' && st.tab !== 'scan' && !anyOverlay && !st.isBizLogin,`),
+    count: 1,
+  },
+  {
+    name: 'Firma: nazwa lokalu pisana krojem firmowym',
+    why:
+      'Pole „znajdź swoją firmę" brało krój zastępczy przeglądarki, przez co ' +
+      'odstawało od reszty. Dostaje Plus Jakarta Sans i wagę 500, tak jak ' +
+      'pozostałe pola w projekcie.',
+    from: js(
+      `<input type="text" ref="{{ bizRef }}" sc-camel-on-input="{{ onBizQuery }}" placeholder="{{ regPh }}" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 15px; color: var(--ink, #16181C);">`,
+    ),
+    to: js(
+      `<input type="text" ref="{{ bizRef }}" sc-camel-on-input="{{ onBizQuery }}" placeholder="{{ regPh }}" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; font-weight: 500; letter-spacing: -0.01em; color: var(--ink, #16181C);">`,
+    ),
+    count: 1,
+  },
+  {
     name: 'Logowanie: sześć pól na kod zamiast czterech',
     why:
       'README opisuje „kod 6-cyfrowy (6 osobnych pól)", a logika prototypu ' +
