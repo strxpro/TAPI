@@ -67,6 +67,11 @@ async function build() {
     scripts += `<script>\n${code}\n</script>\n`;
   }
 
+  // Dane testowe muszą być gotowe, zanim powstanie klasa — pola sięgają po nie
+  // przy tworzeniu obiektu, więc kolejność nie jest tu kwestią gustu.
+  const mock = await readFile(join(APP, 'mock-data.js'), 'utf8').catch(() => null);
+  if (mock) scripts += `<script>\n${mock}\n</script>\n`;
+
   // Ustawienia edytora wracają jako atrybut, w postaci, której oczekuje runtime.
   const attr = JSON.stringify(JSON.parse(props)).replace(/"/g, '&quot;');
 
