@@ -5,9 +5,8 @@
  * mobilnej da się z niej wyjąć, a rachunek idzie na właściciela projektu —
  * dlatego telefon nie zna go wcale.
  *
- * Wgranie:
- *   supabase secrets set GOOGLE_MAPS_API_KEY=...
- *   supabase functions deploy places
+ * Sekret bierzemy ze zmiennych środowiskowych albo z Vault — patrz
+ * _shared/secret.ts. Wdrożone przez MCP Supabase.
  *
  * Wywołanie:
  *   POST { op: 'search',  query: 'Nokturn', lat?, lng? }
@@ -15,6 +14,8 @@
  *   POST { op: 'geocode', address: 'ul. Józefa 12, Kraków' }
  *   POST { op: 'reverse', lat: 50.05, lng: 19.94 }
  */
+
+import { secret } from '../_shared/secret.ts';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -38,8 +39,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'Tylko POST' }, 405);
 
-  const key = Deno.env.get('GOOGLE_MAPS_API_KEY');
-  if (!key) return json({ error: 'Brak GOOGLE_MAPS_API_KEY po stronie serwera' }, 500);
+  const key = await secret('GOOGLE_MAPS_API_KEY');
+  if (!key) return json({ error: 'Brak GOOGLE_MAPS_API_KEY — ani w środowisku, ani w Vault' }, 500);
 
   let body: Body;
   try {

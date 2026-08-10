@@ -255,3 +255,30 @@ create policy "swoje zamówienia" on public.stand_orders
 revoke execute on function public.handle_new_user() from public;
 revoke execute on function public.handle_new_user() from anon;
 revoke execute on function public.handle_new_user() from authenticated;
+
+-- Most między Vault a funkcjami brzegowymi.
+--
+-- Vault trzyma sekrety w bazie, a funkcje brzegowe czytają zmienne
+-- środowiskowe — to dwa osobne systemy i klucz wpisany w jednym jest
+-- niewidoczny w drugim.
+--
+-- Wykonać może wyłącznie `service_role`, czyli kod serwera. Ani `anon`,
+-- ani zalogowany gość nie mają tu wstępu — inaczej każdy wyciągnąłby klucz
+-- przez /rest/v1/rpc.
+create function public.get_secret(secret_name text)
+returns text
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+  select decrypted_secret
+  from vault.decrypted_secrets
+  where name = secret_name
+  limit 1;
+$$;
+
+revoke execute on function public.get_secret(text) from public;
+revoke execute on function public.get_secret(text) from anon;
+revoke execute on function public.get_secret(text) from authenticated;
+grant execute on function public.get_secret(text) to service_role;

@@ -5,10 +5,11 @@
  * z każdej paczki mobilnej, a jest płatny — dlatego rozmowę z modelem
  * prowadzi ta funkcja, a telefon woła tylko ją, ze swoim tokenem sesji.
  *
- * Wgranie:
- *   supabase secrets set GEMINI_API_KEY=...
- *   supabase functions deploy plan-day
+ * Sekret bierzemy ze zmiennych środowiskowych albo z Vault — patrz
+ * _shared/secret.ts. Wdrożone przez MCP Supabase.
  */
+
+import { secret } from '../_shared/secret.ts';
 
 const MODEL = 'gemini-flash-latest';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
@@ -74,8 +75,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'Tylko POST' }, 405);
 
-  const key = Deno.env.get('GEMINI_API_KEY');
-  if (!key) return json({ error: 'Brak GEMINI_API_KEY po stronie serwera' }, 500);
+  const key = await secret('GEMINI_API_KEY');
+  if (!key) return json({ error: 'Brak GEMINI_API_KEY — ani w środowisku, ani w Vault' }, 500);
 
   let body: Body;
   try {
