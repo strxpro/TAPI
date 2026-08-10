@@ -7,6 +7,7 @@ import { LANG_LABEL, LANGS } from '../i18n/dict';
 import { accents, duration, ease, em, fonts, ON_ACCENT, radius, size, space } from '../theme/tokens';
 import { Raw } from '../ui/Text';
 import { press } from '../ui/motion';
+import { Sheet } from '../ui/Sheet';
 import {
   cue,
   feedbackStatus,
@@ -105,24 +106,9 @@ function QuickSettings({ open, onClose }: { open: boolean; onClose: () => void }
   const { theme, accent, mode, setMode, accentName, setAccent } = useTheme();
   const { lang, setLang, l3 } = useI18n();
   const t = useT();
-  const insets = useSafeAreaInsets();
   const [sound, setSound] = useState(isSoundEnabled);
   const [haptic, setHaptic] = useState(isHapticEnabled);
 
-  const slide = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (!open) return;
-    slide.setValue(0);
-    const anim = Animated.timing(slide, {
-      toValue: 1,
-      duration: duration.sheet,
-      easing: Easing.bezier(...ease.standard),
-      useNativeDriver: true,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [open, slide]);
 
   const modes: { id: ThemeMode; label: string }[] = [
     { id: 'auto', label: l3('Jak w telefonie', 'Match phone', 'Come il telefono') },
@@ -131,156 +117,136 @@ function QuickSettings({ open, onClose }: { open: boolean; onClose: () => void }
   ];
 
   return (
-    <Modal visible={open} transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
-      <View style={styles.sheetRoot}>
-        <Pressable style={styles.scrim} onPress={onClose} accessibilityRole="button" />
-        <Animated.View
-          style={[
-            styles.sheet,
-            SHEET_SHADOW,
-            {
-              backgroundColor: theme.paper,
-              paddingBottom: 26 + insets.bottom,
-              transform: [
-                { translateY: slide.interpolate({ inputRange: [0, 1], outputRange: ['104%', '0%'] }) },
-              ],
-            },
-          ]}
-        >
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <Pressable onPress={onClose} accessibilityRole="button" hitSlop={12}>
-              <View style={[styles.grip, { backgroundColor: theme.hair }]} />
-            </Pressable>
-
-            <Raw style={[styles.title, { color: theme.ink }]}>{t('settings')}</Raw>
-
-            {/* ── język ── */}
-            <Raw style={[styles.head, { color: theme.sub }]}>{t('language')}</Raw>
-            <View style={styles.row}>
-              {LANGS.map((id) => (
-                <Choice
-                  key={id}
-                  label={LANG_LABEL[id]}
-                  on={lang === id}
-                  onPress={() => {
-                    cue('select');
-                    setLang(id);
-                  }}
-                />
-              ))}
-            </View>
-
-            {/* ── motyw ── */}
-            <Raw style={[styles.head, { color: theme.sub }]}>{t('theme')}</Raw>
-            <View style={styles.row}>
-              {modes.map((m) => (
-                <Choice
-                  key={m.id}
-                  label={m.label}
-                  on={mode === m.id}
-                  onPress={() => {
-                    cue('select');
-                    setMode(m.id);
-                  }}
-                />
-              ))}
-            </View>
-
-            {/* ── akcent ── */}
-            <Raw style={[styles.head, { color: theme.sub }]}>{t('accent')}</Raw>
-            <View style={styles.row}>
-              {(Object.keys(accents) as AccentName[]).map((id) => {
-                const on = accentName === id;
-                return (
-                  <Pressable
+    <Sheet open={open} onClose={onClose}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+  
+              <Raw style={[styles.title, { color: theme.ink }]}>{t('settings')}</Raw>
+  
+              {/* ── język ── */}
+              <Raw style={[styles.head, { color: theme.sub }]}>{t('language')}</Raw>
+              <View style={styles.row}>
+                {LANGS.map((id) => (
+                  <Choice
                     key={id}
-                    accessibilityRole="button"
-                    accessibilityLabel={accents[id].label}
-                    accessibilityState={{ selected: on }}
+                    label={LANG_LABEL[id]}
+                    on={lang === id}
                     onPress={() => {
                       cue('select');
-                      setAccent(id);
+                      setLang(id);
                     }}
-                    style={({ pressed }) => [
-                      styles.swatchWrap,
-                      { borderColor: on ? accents[id].hex : theme.hair },
-                      press(0.92)({ pressed }),
-                    ]}
-                  >
-                    <View style={[styles.swatch, { backgroundColor: accents[id].hex }]} />
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {/* ── czucie ── */}
-            <Raw style={[styles.head, { color: theme.sub }]}>
-              {l3('Dźwięk i wibracje', 'Sound and vibration', 'Suono e vibrazione')}
-            </Raw>
-            <Toggle
-              label={l3('Dźwięki interfejsu', 'Interface sounds', 'Suoni dell’interfaccia')}
-              sub={l3(
-                'Ciche stuknięcia i ping po skanie',
-                'Quiet taps and a ping after a scan',
-                'Tocchi discreti e un ping dopo la scansione',
-              )}
-              on={sound}
-              onPress={() => {
-                const next = !sound;
-                setSound(next);
-                setSoundEnabled(next);
-                if (next) cue('ping');
-              }}
-            />
-            <Toggle
-              label={l3('Wibracje', 'Vibration', 'Vibrazione')}
-              sub={l3(
-                'Krótkie drgnięcie przy wyborze',
-                'A short buzz on selection',
-                'Un breve tocco alla selezione',
-              )}
-              on={haptic}
-              onPress={() => {
-                const next = !haptic;
-                setHaptic(next);
-                setHapticEnabled(next);
-                if (next) cue('save');
-              }}
-            />
-
-            {/* ── sprawdzenie czucia ── */}
-            <Raw style={[styles.head, { color: theme.sub }]}>
-              {l3('Sprawdź', 'Test it', 'Prova')}
-            </Raw>
-            <View style={styles.row}>
-              {(
-                [
-                  ['tab', l3('Stuknięcie', 'Tap', 'Tocco')],
-                  ['save', l3('Zapis', 'Save', 'Salva')],
-                  ['ping', l3('Ping', 'Ping', 'Ping')],
-                  ['success', l3('Gotowe', 'Done', 'Fatto')],
-                ] as [Cue, string][]
-              ).map(([kind, label]) => (
-                <Choice key={kind} label={label} on={false} onPress={() => cue(kind)} />
-              ))}
-            </View>
-            <Diagnostics />
-
-            <Pressable
-              onPress={onClose}
-              accessibilityRole="button"
-              style={({ pressed }) => [
-                styles.done,
-                { backgroundColor: accent.hex },
-                press(0.98)({ pressed }),
-              ]}
-            >
-              <Raw style={styles.doneText}>{l3('Gotowe', 'Done', 'Fatto')}</Raw>
-            </Pressable>
-          </ScrollView>
-        </Animated.View>
-      </View>
-    </Modal>
+                  />
+                ))}
+              </View>
+  
+              {/* ── motyw ── */}
+              <Raw style={[styles.head, { color: theme.sub }]}>{t('theme')}</Raw>
+              <View style={styles.row}>
+                {modes.map((m) => (
+                  <Choice
+                    key={m.id}
+                    label={m.label}
+                    on={mode === m.id}
+                    onPress={() => {
+                      cue('select');
+                      setMode(m.id);
+                    }}
+                  />
+                ))}
+              </View>
+  
+              {/* ── akcent ── */}
+              <Raw style={[styles.head, { color: theme.sub }]}>{t('accent')}</Raw>
+              <View style={styles.row}>
+                {(Object.keys(accents) as AccentName[]).map((id) => {
+                  const on = accentName === id;
+                  return (
+                    <Pressable
+                      key={id}
+                      accessibilityRole="button"
+                      accessibilityLabel={accents[id].label}
+                      accessibilityState={{ selected: on }}
+                      onPress={() => {
+                        cue('select');
+                        setAccent(id);
+                      }}
+                      style={({ pressed }) => [
+                        styles.swatchWrap,
+                        { borderColor: on ? accents[id].hex : theme.hair },
+                        press(0.92)({ pressed }),
+                      ]}
+                    >
+                      <View style={[styles.swatch, { backgroundColor: accents[id].hex }]} />
+                    </Pressable>
+                  );
+                })}
+              </View>
+  
+              {/* ── czucie ── */}
+              <Raw style={[styles.head, { color: theme.sub }]}>
+                {l3('Dźwięk i wibracje', 'Sound and vibration', 'Suono e vibrazione')}
+              </Raw>
+              <Toggle
+                label={l3('Dźwięki interfejsu', 'Interface sounds', 'Suoni dell’interfaccia')}
+                sub={l3(
+                  'Ciche stuknięcia i ping po skanie',
+                  'Quiet taps and a ping after a scan',
+                  'Tocchi discreti e un ping dopo la scansione',
+                )}
+                on={sound}
+                onPress={() => {
+                  const next = !sound;
+                  setSound(next);
+                  setSoundEnabled(next);
+                  if (next) cue('ping');
+                }}
+              />
+              <Toggle
+                label={l3('Wibracje', 'Vibration', 'Vibrazione')}
+                sub={l3(
+                  'Krótkie drgnięcie przy wyborze',
+                  'A short buzz on selection',
+                  'Un breve tocco alla selezione',
+                )}
+                on={haptic}
+                onPress={() => {
+                  const next = !haptic;
+                  setHaptic(next);
+                  setHapticEnabled(next);
+                  if (next) cue('save');
+                }}
+              />
+  
+              {/* ── sprawdzenie czucia ── */}
+              <Raw style={[styles.head, { color: theme.sub }]}>
+                {l3('Sprawdź', 'Test it', 'Prova')}
+              </Raw>
+              <View style={styles.row}>
+                {(
+                  [
+                    ['tab', l3('Stuknięcie', 'Tap', 'Tocco')],
+                    ['save', l3('Zapis', 'Save', 'Salva')],
+                    ['ping', l3('Ping', 'Ping', 'Ping')],
+                    ['success', l3('Gotowe', 'Done', 'Fatto')],
+                  ] as [Cue, string][]
+                ).map(([kind, label]) => (
+                  <Choice key={kind} label={label} on={false} onPress={() => cue(kind)} />
+                ))}
+              </View>
+              <Diagnostics />
+  
+              <Pressable
+                onPress={onClose}
+                accessibilityRole="button"
+                style={({ pressed }) => [
+                  styles.done,
+                  { backgroundColor: accent.hex },
+                  press(0.98)({ pressed }),
+                ]}
+              >
+                <Raw style={styles.doneText}>{l3('Gotowe', 'Done', 'Fatto')}</Raw>
+              </Pressable>
+            </ScrollView>
+    </Sheet>
   );
 }
 
@@ -418,14 +384,6 @@ const SHADOW = {
   elevation: 6,
 } as const;
 
-const SHEET_SHADOW = {
-  shadowColor: '#16181C',
-  shadowOpacity: 0.2,
-  shadowRadius: 16,
-  shadowOffset: { width: 0, height: -12 },
-  elevation: 20,
-} as const;
-
 const KNOB_SHADOW = {
   shadowColor: '#16181C',
   shadowOpacity: 0.25,
@@ -447,16 +405,6 @@ const styles = StyleSheet.create({
   initials: { fontFamily: fonts.sansBold, fontSize: size.s125, letterSpacing: em(size.s125, 0.02) },
   dot: { width: 9, height: 9, borderRadius: radius.pill },
 
-  sheetRoot: { flex: 1, justifyContent: 'flex-end' },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(22,24,28,0.45)' },
-  sheet: {
-    maxHeight: '86%',
-    borderTopLeftRadius: radius.sheet28,
-    borderTopRightRadius: radius.sheet28,
-    paddingTop: 12,
-    paddingHorizontal: space.screen,
-  },
-  grip: { width: 36, height: 4, borderRadius: 4, alignSelf: 'center', marginBottom: 16 },
   title: { fontFamily: fonts.serif, fontSize: size.s27, letterSpacing: em(size.s27, -0.03) },
   head: {
     fontFamily: fonts.sansSemi,

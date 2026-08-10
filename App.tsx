@@ -18,6 +18,7 @@ import { I18nProvider } from './src/i18n/I18nProvider';
 import { TabBar } from './src/nav/TabBar';
 import { ScreenHost } from './src/nav/ScreenHost';
 import { Avatar } from './src/nav/Avatar';
+import { Dismissable } from './src/nav/Dismissable';
 import { cue, useFeedbackWarmUp } from './src/ui/feedback';
 import { type Tab } from './src/nav/routes';
 import { Splash } from './src/screens/Splash';
@@ -133,10 +134,25 @@ function Shell() {
     // Wizytówka przykrywa listę, tak jak `tab: 'venue'` w prototypie.
     if (openVenue) {
       const v = venueById(openVenue);
-      if (v) return <VenueDetail venue={v} onBack={() => setOpenVenue(null)} />;
+      if (v)
+        return (
+          <Dismissable onClose={() => setOpenVenue(null)}>
+            <VenueDetail venue={v} onBack={() => setOpenVenue(null)} />
+          </Dismissable>
+        );
     }
-    if (stand) return <SmartStand />;
-    if (planner) return <Trip />;
+    if (stand)
+      return (
+        <Dismissable onClose={() => setStand(false)}>
+          <SmartStand />
+        </Dismissable>
+      );
+    if (planner)
+      return (
+        <Dismissable onClose={() => setPlanner(false)}>
+          <Trip />
+        </Dismissable>
+      );
     if (tab === 'discover')
       return (
         <Discover
