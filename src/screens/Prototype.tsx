@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
-import * as Haptics from 'expo-haptics';
+import { cue, useFeedbackWarmUp, type Cue } from '../ui/feedback';
 import { Asset } from 'expo-asset';
 // SDK 54 wycofało `readAsStringAsync` z głównego wejścia modułu i rzuca
 // wyjątkiem przy próbie użycia. Stara wersja jest nadal dostarczana pod
@@ -125,31 +125,32 @@ export function Prototype() {
   const [error, setError] = useState<string | null>(null);
   const webRef = useRef<WebView>(null);
 
+  // Odtwarzacze budzimy z góry, żeby pierwsze stuknięcie nie było głuche.
+  useFeedbackWarmUp();
+
   /**
-   * Most haptyczny: strona zgłasza dotknięcie, wibrację wywołuje system.
-   * To jedyna droga na iPhonie — navigator.vibrate tam nie istnieje.
+   * Most czucia: strona zgłasza dotknięcie, resztę robi system.
+   * To jedyna droga na iPhonie — `navigator.vibrate` tam nie istnieje.
+   *
+   * Prototyp woła `buzz(ms, kind)` i zna tylko pięć rodzajów. Przekładamy je
+   * na wspólne `cue()`, dzięki czemu prototyp dostaje nie tylko drgnięcie,
+   * ale i dźwięk — te same trzy pliki, co ekrany natywne, i te same
+   * przełączniki w ustawieniach.
    */
   const onMessage = useCallback((event: WebViewMessageEvent) => {
     try {
       const msg = JSON.parse(event.nativeEvent.data) as { type?: string; kind?: string };
       if (msg.type !== 'haptic') return;
 
-      switch (msg.kind) {
-        case 'medium':
-          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-          break;
-        case 'success':
-          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-          break;
-        case 'warning':
-          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-          break;
-        case 'error':
-          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-          break;
-        default:
-          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      }
+      const map: Record<string, Cue> = {
+        // skan naklejki i odbiór nagrody — moment, w którym ping ma sens
+        success: 'ping',
+        medium: 'tab',
+        warning: 'save',
+        error: 'error',
+        light: 'select',
+      };
+      cue(map[msg.kind ?? 'light'] ?? 'select');
     } catch {
       // Wiadomości spoza naszego mostu ignorujemy po cichu.
     }

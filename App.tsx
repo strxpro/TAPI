@@ -76,7 +76,7 @@ export default function App() {
  * Ekrany natywne żyją dalej i będą wchodzić na miejsce prototypu pojedynczo,
  * w miarę zatwierdzania. Przełączenie to zmiana tej jednej wartości.
  */
-const MODE: 'prototype' | 'native' | 'stand' = 'native';
+const MODE: 'prototype' | 'native' | 'stand' = 'prototype';
 
 /** Konfigurator stojaka bez paska nawigacji — do obejrzenia modelu. */
 function StandOnly() {
