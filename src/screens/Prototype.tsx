@@ -4,6 +4,7 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { cue, useFeedbackWarmUp, type Cue } from '../ui/feedback';
 import { BRIDGE_SCRIPT, isBridgeRequest } from '../bridge/protocol';
 import { HANDLERS } from '../bridge/handlers';
+import { useCameraBridge } from '../native/useCameraBridge';
 import { Asset } from 'expo-asset';
 // SDK 54 wycofało `readAsStringAsync` z głównego wejścia modułu i rzuca
 // wyjątkiem przy próbie użycia. Stara wersja jest nadal dostarczana pod
@@ -160,6 +161,9 @@ export function Prototype() {
   // Odtwarzacze budzimy z góry, żeby pierwsze stuknięcie nie było głuche.
   useFeedbackWarmUp();
 
+  // Aparat jest nakładką natywną — strona prosi o niego mostem.
+  const camera = useCameraBridge();
+
   /**
    * Most czucia: strona zgłasza dotknięcie, resztę robi system.
    * To jedyna droga na iPhonie — `navigator.vibrate` tam nie istnieje.
@@ -179,12 +183,22 @@ export function Prototype() {
 
     // ── zapytanie przez most: strona prosi, my robimy naprawdę ──
     if (isBridgeRequest(msg)) {
-      const handler = HANDLERS[msg.method];
       const reply = (ok: boolean, data: unknown) =>
         webRef.current?.injectJavaScript(
           `window.__tapiReply(${msg.id}, ${ok}, ${JSON.stringify(data)}); true;`,
         );
 
+      // Aparat obsługujemy tutaj, a nie w katalogu mostu — nakładka potrzebuje
+      // stanu tego ekranu, żeby dało się ją pokazać nad stroną.
+      if (msg.method === 'camera.scanCode' || msg.method === 'camera.scanMenu') {
+        camera
+          .open(msg.method === 'camera.scanCode' ? 'code' : 'menu')
+          .then((data) => reply(true, data))
+          .catch((err) => reply(false, { message: String(err?.message ?? err) }));
+        return;
+      }
+
+      const handler = HANDLERS[msg.method];
       if (!handler) {
         reply(false, { message: `Nieznana metoda: ${msg.method}` });
         return;
@@ -209,7 +223,7 @@ export function Prototype() {
       light: 'select',
     };
     cue(map[m.kind ?? 'light'] ?? 'select');
-  }, []);
+  }, [camera]);
 
   useEffect(() => {
     let alive = true;
@@ -283,6 +297,7 @@ export function Prototype() {
         androidLayerType="hardware"
         renderToHardwareTextureAndroid
       />
+      <camera.Sheet />
     </View>
   );
 }

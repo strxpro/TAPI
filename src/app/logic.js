@@ -637,15 +637,39 @@ class Component extends DCLogic {
   }
 
   runScan() {
-    this.setState({ scan: 'busy', scanStep: 0 });
-    let i = 0;
-    clearInterval(this.scanT);
-    this.scanT = setInterval(() => {
-      i++;
-      if (i >= 3) { clearInterval(this.scanT); this.setState({ scan: 'idle' }); this.openVenue('nokturn', true);
-        this.toast(this.state.lang === 'pl' ? 'Rozpoznano: Nokturn. Kupon czeka w wizytówce.' : 'Recognised: Nokturn. Your coupon is on the card.'); }
-      else this.setState({ scanStep: i });
-    }, 560);
+    if (!window.TAPI || !window.TAPI.native) {
+      this.setState({ scan: 'busy', scanStep: 0 });
+      let i = 0;
+      clearInterval(this.scanT);
+      this.scanT = setInterval(() => {
+        i++;
+        if (i >= 3) { clearInterval(this.scanT); this.setState({ scan: 'idle' }); this.openVenue('nokturn', true);
+          this.toast(this.state.lang === 'pl' ? 'Rozpoznano: Nokturn. Kupon czeka w wizytówce.' : 'Recognised: Nokturn. Your coupon is on the card.'); }
+        else this.setState({ scanStep: i });
+      }, 560);
+      return;
+    }
+
+    this.setState({ scan: 'busy', scanStep: 1 });
+    window.TAPI.call('camera.scanCode').then((r) => {
+      this.setState({ scan: 'idle', scanStep: 0 });
+      if (!r || r.cancelled) return;
+      if (r.error) { this.toast(r.error); return; }
+
+      // Kod prowadzi do lokalu. Dopóki naklejki nie są wydrukowane,
+      // przyjmujemy też sam identyfikator wpisany w kodzie.
+      var id = String(r.code || '');
+      var m = id.match(/tapi\.app\/v\/([\w-]+)/);
+      if (m) id = m[1];
+      var known = (window.MOCK && window.MOCK.venues || []).filter(function (v) { return v.id === id; })[0];
+      if (!known) { this.toast(this.l3('Nie znam tego kodu.', 'Unknown code.', 'Codice sconosciuto.')); return; }
+
+      this.openVenue(known.id, true);
+      this.toast(this.l3('Rozpoznano: ', 'Recognised: ', 'Riconosciuto: ') + known.name);
+    }).catch((e) => {
+      this.setState({ scan: 'idle', scanStep: 0 });
+      this.toast(String(e.message || e));
+    });
   }
 
   dragStart(e) {
@@ -1937,9 +1961,30 @@ class Component extends DCLogic {
 
       /* ══ SKANER MENU ══ */
       menuScanOpen: !!st.menuScan,
-      openMenuScan: () => { this.buzz(10); this.setState({ menuScan: true, scanPhase: 0 });
-        clearTimeout(this.msT);
-        this.msT = setTimeout(() => { this.buzz([0, 14]); this.setState({ scanPhase: 1 }); }, 1900); },
+      openMenuScan: () => {
+        this.buzz(10);
+        if (!window.TAPI || !window.TAPI.native) {
+          this.setState({ menuScan: true, scanPhase: 0 });
+          clearTimeout(this.msT);
+          this.msT = setTimeout(() => { this.buzz([0, 14]); this.setState({ scanPhase: 1 }); }, 1900);
+          return;
+        }
+        this.setState({ menuScan: true, scanPhase: 0 });
+        window.TAPI.call('camera.scanMenu').then((r) => {
+          if (!r || r.cancelled) { this.setState({ menuScan: false, scanPhase: 0 }); return; }
+          if (r.error) { this.setState({ menuScan: false, scanPhase: 0 }); this.toast(r.error); return; }
+          var items = (r.items || []).map(function (x) {
+            return { name: x.name, desc: x.description || '', price: x.price };
+          });
+          if (!items.length) {
+            this.setState({ menuScan: false, scanPhase: 0 });
+            this.toast(this.l3('Nic nie odczytałem z tego zdjęcia.', 'Nothing readable in that photo.', 'Nulla di leggibile in quella foto.'));
+            return;
+          }
+          this.buzz([0, 14]);
+          this.setState({ scanPhase: 1, menuItems: items });
+        }).catch((e) => { this.setState({ menuScan: false, scanPhase: 0 }); this.toast(String(e.message || e)); });
+      },
       closeMenuScan: () => { clearTimeout(this.msT); this.setState({ menuScan: false, scanPhase: 0 }); },
       scanSeeking: (st.scanPhase || 0) === 0,
       scanLocked: (st.scanPhase || 0) === 1,

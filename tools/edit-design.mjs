@@ -32,6 +32,96 @@ const js = (code) =>
 /** Lista zmian. Każda musi trafić dokładnie tyle razy, ile deklaruje `count`. */
 const EDITS = [
   {
+    name: 'Skaner: prawdziwy aparat zamiast udawanego odliczania',
+    why:
+      'Prototyp odliczał trzy kroki i po 1,7 s „rozpoznawał" Nokturn. Teraz ' +
+      'most otwiera nakładkę natywną z aparatem, bo strona w widoku ' +
+      'przeglądarki nie ma do niego dostępu. Poza aplikacją zostaje stare ' +
+      'zachowanie, żeby projekt dało się dalej oglądać w przeglądarce.',
+    from: js(`  runScan() {
+    this.setState({ scan: 'busy', scanStep: 0 });
+    let i = 0;
+    clearInterval(this.scanT);
+    this.scanT = setInterval(() => {
+      i++;
+      if (i >= 3) { clearInterval(this.scanT); this.setState({ scan: 'idle' }); this.openVenue('nokturn', true);
+        this.toast(this.state.lang === 'pl' ? 'Rozpoznano: Nokturn. Kupon czeka w wizytówce.' : 'Recognised: Nokturn. Your coupon is on the card.'); }
+      else this.setState({ scanStep: i });
+    }, 560);
+  }`),
+    to: js(`  runScan() {
+    if (!window.TAPI || !window.TAPI.native) {
+      this.setState({ scan: 'busy', scanStep: 0 });
+      let i = 0;
+      clearInterval(this.scanT);
+      this.scanT = setInterval(() => {
+        i++;
+        if (i >= 3) { clearInterval(this.scanT); this.setState({ scan: 'idle' }); this.openVenue('nokturn', true);
+          this.toast(this.state.lang === 'pl' ? 'Rozpoznano: Nokturn. Kupon czeka w wizytówce.' : 'Recognised: Nokturn. Your coupon is on the card.'); }
+        else this.setState({ scanStep: i });
+      }, 560);
+      return;
+    }
+
+    this.setState({ scan: 'busy', scanStep: 1 });
+    window.TAPI.call('camera.scanCode').then((r) => {
+      this.setState({ scan: 'idle', scanStep: 0 });
+      if (!r || r.cancelled) return;
+      if (r.error) { this.toast(r.error); return; }
+
+      // Kod prowadzi do lokalu. Dopóki naklejki nie są wydrukowane,
+      // przyjmujemy też sam identyfikator wpisany w kodzie.
+      var id = String(r.code || '');
+      var m = id.match(/tapi\\.app\\/v\\/([\\w-]+)/);
+      if (m) id = m[1];
+      var known = (window.MOCK && window.MOCK.venues || []).filter(function (v) { return v.id === id; })[0];
+      if (!known) { this.toast(this.l3('Nie znam tego kodu.', 'Unknown code.', 'Codice sconosciuto.')); return; }
+
+      this.openVenue(known.id, true);
+      this.toast(this.l3('Rozpoznano: ', 'Recognised: ', 'Riconosciuto: ') + known.name);
+    }).catch((e) => {
+      this.setState({ scan: 'idle', scanStep: 0 });
+      this.toast(String(e.message || e));
+    });
+  }`),
+    count: 1,
+  },
+  {
+    name: 'Skaner menu: zdjęcie karty czyta model, nie odliczanie',
+    why:
+      'Prototyp po 1,9 s pokazywał sześć wpisanych na sztywno pozycji. ' +
+      'Teraz robi się zdjęcie karty, a model przepisuje ją na pozycje z ceną. ' +
+      'To zdejmuje z właściciela lokalu ręczne przepisywanie menu.',
+    from: js(`      openMenuScan: () => { this.buzz(10); this.setState({ menuScan: true, scanPhase: 0 });
+        clearTimeout(this.msT);
+        this.msT = setTimeout(() => { this.buzz([0, 14]); this.setState({ scanPhase: 1 }); }, 1900); },`),
+    to: js(`      openMenuScan: () => {
+        this.buzz(10);
+        if (!window.TAPI || !window.TAPI.native) {
+          this.setState({ menuScan: true, scanPhase: 0 });
+          clearTimeout(this.msT);
+          this.msT = setTimeout(() => { this.buzz([0, 14]); this.setState({ scanPhase: 1 }); }, 1900);
+          return;
+        }
+        this.setState({ menuScan: true, scanPhase: 0 });
+        window.TAPI.call('camera.scanMenu').then((r) => {
+          if (!r || r.cancelled) { this.setState({ menuScan: false, scanPhase: 0 }); return; }
+          if (r.error) { this.setState({ menuScan: false, scanPhase: 0 }); this.toast(r.error); return; }
+          var items = (r.items || []).map(function (x) {
+            return { name: x.name, desc: x.description || '', price: x.price };
+          });
+          if (!items.length) {
+            this.setState({ menuScan: false, scanPhase: 0 });
+            this.toast(this.l3('Nic nie odczytałem z tego zdjęcia.', 'Nothing readable in that photo.', 'Nulla di leggibile in quella foto.'));
+            return;
+          }
+          this.buzz([0, 14]);
+          this.setState({ scanPhase: 1, menuItems: items });
+        }).catch((e) => { this.setState({ menuScan: false, scanPhase: 0 }); this.toast(String(e.message || e)); });
+      },`),
+    count: 1,
+  },
+  {
     name: 'Czucie: usunięcie drugiej definicji `buzz`, która kasowała most',
     why:
       'Klasa definiowała `buzz` dwa razy. Druga definicja — z samym ' +
