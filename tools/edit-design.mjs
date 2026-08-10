@@ -21,8 +21,155 @@ const ROOT = resolve(here, '..', '..');
 const FILE = join(ROOT, 'TAPI-standalone.html');
 const BACKUPS = join(ROOT, 'kopie');
 
+/**
+ * Kod aplikacji siedzi w pliku zakodowany jako JSON, dodatkowo z `<` i `>`
+ * zapisanymi jako `\u003c` i `\u003e`. Ta funkcja robi to samo, dzięki czemu
+ * poniżej można pisać zwykły JavaScript zamiast ręcznie stawiać ukośniki.
+ */
+const js = (code) =>
+  JSON.stringify(code).slice(1, -1).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+
 /** Lista zmian. Każda musi trafić dokładnie tyle razy, ile deklaruje `count`. */
 const EDITS = [
+  {
+    name: 'Logowanie: sześć pól na kod zamiast czterech',
+    why:
+      'README opisuje „kod 6-cyfrowy (6 osobnych pól)", a logika prototypu ' +
+      'przyjmowała cztery — to logika odstawała od specyfikacji. Poza tym ' +
+      'Supabase wysyła kod sześciocyfrowy i krótszego nie da się ustawić.',
+    from: js(`      codeCells: [0, 1, 2, 3].map((i) => ({ ch: st.code[i] || '', border: st.code.length === i ? at : th.hair })),`),
+    to: js(`      codeCells: [0, 1, 2, 3, 4, 5].map((i) => ({ ch: st.code[i] || '', border: st.code.length === i ? at : th.hair })),`),
+    count: 1,
+  },
+  {
+    name: 'Logowanie: klawiatura kodu liczy do sześciu',
+    why: 'Ta sama zmiana co wyżej, po stronie wpisywania.',
+    from: js(`    if (ch === 'ok') { if (this.state.code.length === 4) this.verify(); return; }`),
+    to: js(`    if (ch === 'ok') { if (this.state.code.length === 6) this.verify(); return; }`),
+    count: 1,
+  },
+  {
+    name: 'Logowanie: sprawdzenie kodu po szóstej cyfrze',
+    why: 'Bez tego kod nigdy nie odpalałby sprawdzenia.',
+    from: js(`    if (code.length === 4) setTimeout(() => this.verify(), 240);`),
+    to: js(`    if (code.length === 6) setTimeout(() => this.verify(), 240);`),
+    count: 1,
+  },
+  {
+    name: 'Logowanie: kod naprawdę wychodzi na e-mail',
+    why:
+      'Prototyp tylko przechodził do następnego kroku. Teraz prosi most ' +
+      'o wysłanie kodu przez Supabase. Poza aplikacją zachowuje się jak dawniej, ' +
+      'żeby prototyp dało się dalej oglądać w przeglądarce.',
+    from: js(
+      `      sendCode: () => { const m = (this.emailRef.current && this.emailRef.current.value) || 'ty@tapi.app'; this.setState({ mailAddr: m, mailStep: 'code', code: '' }); },`,
+    ),
+    to: js(
+      `      sendCode: () => { const m = (this.emailRef.current && this.emailRef.current.value) || 'ty@tapi.app';
+        this.setState({ mailAddr: m, mailStep: 'code', code: '' });
+        if (window.TAPI && window.TAPI.native) {
+          window.TAPI.call('auth.sendCode', { email: m, business: this.state.isBizLogin === true })
+            .then((r) => { if (r && r.error) this.toast(r.error); })
+            .catch((e) => this.toast(String(e.message || e)));
+        } },`,
+    ),
+    count: 1,
+  },
+  {
+    name: 'Logowanie: kod sprawdzany naprawdę',
+    why:
+      'Zamiast udawanego czekania 1150 ms idzie prawdziwe sprawdzenie kodu. ' +
+      'Imię bierzemy z konta, a nie z wpisanego na sztywno „Klara Ziarno".',
+    from: js(`  verify() {
+    this.setState({ mailStep: 'wait' });
+    clearTimeout(this.authT);
+    this.authT = setTimeout(() => this.finishLogin('Klara Ziarno'), 1150);
+  }`),
+    to: js(`  verify() {
+    this.setState({ mailStep: 'wait' });
+    clearTimeout(this.authT);
+    if (!window.TAPI || !window.TAPI.native) {
+      this.authT = setTimeout(() => this.finishLogin('Klara Ziarno'), 1150);
+      return;
+    }
+    window.TAPI.call('auth.verifyCode', {
+      email: this.state.mailAddr, code: this.state.code,
+      business: this.state.isBizLogin === true
+    }).then((r) => {
+      if (r && r.error) { this.setState({ mailStep: 'code', code: '' }); this.toast(r.error); return; }
+      const u = r && r.user;
+      this.finishLogin((u && u.name) || (u && u.email) || 'Gość');
+      if (u && u.isBusiness) this.setState({ bizAccount: true });
+    }).catch((e) => { this.setState({ mailStep: 'code', code: '' }); this.toast(String(e.message || e)); });
+  }`),
+    count: 1,
+  },
+  {
+    name: 'Rejestracja firmy: wyszukiwarka pyta Google, nie listę w pliku',
+    why:
+      'Prototyp filtrował ośmiopozycyjną listę wpisaną w kod (`gAll`), więc ' +
+      'nie dało się znaleźć własnego lokalu. Teraz pytanie idzie mostem do ' +
+      'Places API, a lista z pliku zostaje jako zapas, gdy strona działa ' +
+      'poza aplikacją.',
+    from: js(`  gHits(st) {
+    const q = ((st.bizQuery || '') + '').trim().toLowerCase();
+    if (q.length < 2) return [];
+    return this.gAll.filter((g) => (g.name + ' ' + g.addr).toLowerCase().indexOf(q) > -1).slice(0, 4);
+  }`),
+    to: js(`  gHits(st) {
+    const q = ((st.bizQuery || '') + '').trim().toLowerCase();
+    if (q.length < 2) return [];
+    return (st.gReal || []).slice(0, 6);
+  }`),
+    count: 1,
+  },
+  {
+    name: 'Rejestracja firmy: zapytanie do Places po przerwie w pisaniu',
+    why:
+      'Te same 430 ms, które udawały ładowanie, są teraz prawdziwą przerwą ' +
+      'przed zapytaniem — dzięki temu nie pytamy Google przy każdej literze.',
+    from: js(`      onBizQuery: (e) => {
+        const v = e.target.value;
+        this.setState({ bizQuery: v, gBusy: v.trim().length > 1 });
+        clearTimeout(this.gT);
+        this.gT = setTimeout(() => this.setState({ gBusy: false }), 430);
+      },`),
+    to: js(`      onBizQuery: (e) => {
+        const v = e.target.value;
+        this.setState({ bizQuery: v, gBusy: v.trim().length > 1 });
+        clearTimeout(this.gT);
+        this.gT = setTimeout(() => {
+          const q = v.trim();
+          if (q.length < 2) { this.setState({ gBusy: false, gReal: [] }); return; }
+          if (!window.TAPI || !window.TAPI.native) {
+            const low = q.toLowerCase();
+            this.setState({ gBusy: false,
+              gReal: this.gAll.filter((g) => (g.name + ' ' + g.addr).toLowerCase().indexOf(low) > -1) });
+            return;
+          }
+          window.TAPI.call('maps.search', { query: q }).then((r) => {
+            this.setState({ gBusy: false, gReal: ((r && r.results) || []).map((x) => ({
+              name: x.name, addr: x.address, placeId: x.placeId,
+              rating: (x.rating ? String(x.rating).replace('.', ',') : '—') + ' · ' + (x.votes || 0)
+            })) });
+          }).catch(() => this.setState({ gBusy: false, gReal: [] }));
+        }, 430);
+      },`),
+    count: 1,
+  },
+  {
+    name: 'Rejestracja firmy: zapamiętanie identyfikatora miejsca Google',
+    why:
+      'Bez niego nie da się później dociągnąć godzin, telefonu i strony ' +
+      'lokalu ani powiązać wizytówki z prawdziwym miejscem na mapie.',
+    from: js(
+      `pick: () => { this.setState({ bizPicked: g.name, bizAddr: g.addr, bizRating: g.rating, bizStep: 2, bizVerify: 'idle' }); } };`,
+    ),
+    to: js(
+      `pick: () => { this.setState({ bizPicked: g.name, bizAddr: g.addr, bizRating: g.rating, bizPlaceId: g.placeId || null, bizStep: 2, bizVerify: 'idle' }); } };`,
+    ),
+    count: 1,
+  },
   {
     name: 'Pasek dolny: ikona zakładki zamiast wyrażenia regularnego',
     why:
