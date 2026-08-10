@@ -70,7 +70,11 @@ const EDITS = [
       'Pływający awatar gościa wchodził w ekran zakładania konta firmowego — ' +
       'nie ma tam czego pokazywać, bo konta jeszcze nie ma.',
     from: js(`      showAvatar: (st.phase === 'app' || st.phase === 'biz') && st.tab !== 'scan' && !anyOverlay,`),
-    to: js(`      showAvatar: st.phase === 'app' && st.tab !== 'scan' && !anyOverlay && !st.isBizLogin,`),
+    // Wystarczy odjąć `phase === 'biz'`: awatar gościa znika wszędzie po stronie
+    // firmy — i przy zakładaniu konta, i w panelu. Nie sięgamy po `isBizLogin`,
+    // bo to martwy stan: ustawiany raz na `true` i nigdzie nieczytany, więc
+    // warunek z nim chowałby awatar zawsze i każdemu.
+    to: js(`      showAvatar: st.phase === 'app' && st.tab !== 'scan' && !anyOverlay,`),
     count: 1,
   },
   {
