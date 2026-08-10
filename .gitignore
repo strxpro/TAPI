@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Dokument składany z src/app przez `npm run app` — powstaje z plików źródłowych,
+# więc nie trzymamy 4,7 MB w historii.
+assets/app.html
+assets/prototype.html

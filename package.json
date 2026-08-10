@@ -47,7 +47,10 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "proto": "node tools/build-prototype.mjs",
-    "design": "node tools/build-prototype.mjs --watch"
+    "design": "node tools/build-prototype.mjs --watch",
+    "app": "node tools/build-app.mjs",
+    "app:watch": "node tools/build-app.mjs --watch",
+    "unpack": "node tools/unpack-design.mjs"
   },
   "private": true
 }

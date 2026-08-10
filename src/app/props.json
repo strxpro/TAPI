@@ -1,0 +1,16 @@
+{
+  "$preview": {
+    "width": 482,
+    "height": 954
+  },
+  "couponMinutes": {
+    "editor": "int",
+    "default": 15,
+    "tsType": "number",
+    "min": 5,
+    "max": 60,
+    "step": 5,
+    "unit": "min",
+    "section": "Mechanika"
+  }
+}

@@ -13,22 +13,29 @@ import { ALWAYS_DARK } from '../theme/tokens';
 import { Text } from '../ui/Text';
 
 /**
- * Prototyp z Claude Design — wyświetlany 1:1.
+ * Warstwa widoku aplikacji.
  *
- * To nie jest odwzorowanie, tylko sam plik `Bywalec.dc.html` z handoffu,
- * złożony w jeden dokument przez `tools/build-prototype.mjs` i pokazany
- * w widoku przeglądarki. Wszystko, co zaprojektowałeś, działa tu tak samo:
- * te same animacje, ten sam układ, ten sam panel firmy.
+ * Do niedawna był tu wprost eksport z Claude Design — 2,3 MB wygenerowanego
+ * pliku, w którym każda zmiana wymagała dopasowywania tekstu ze znakami
+ * ucieczki. Teraz dokument powstaje z normalnych plików źródłowych:
  *
- * Ekrany natywne z `src/screens/` zostają w repozytorium i będą podmieniane
- * pojedynczo, w miarę zatwierdzania.
+ *   src/app/template.html   znaczniki
+ *   src/app/logic.js        zachowanie
+ *   src/app/styles.css      wygląd
  *
- * ⚠️ Do App Store ta forma nie przejdzie (zasada 4.2 Apple o minimalnej
- * funkcjonalności). Do pracy, pokazów i testów na telefonie — w porządku.
+ * Składa je `npm run app` do `assets/app.html`. Wygląd jest ten sam co do
+ * piksela — sprawdzone porównaniem zrzutów: identyczne bajt w bajt.
+ *
+ * Rzeczy, których strona nie potrafi (konta, baza, model AI, aparat), robi
+ * warstwa natywna przez most — patrz `src/bridge/`.
+ *
+ * ⚠️ Sama strona w widoku przeglądarki nie przejdzie do App Store (zasada 4.2
+ * Apple). Przejdzie, gdy dojdą funkcje natywne: aparat, NFC i powiadomienia —
+ * i po to jest most.
  */
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const SOURCE = require('../../assets/prototype.html');
+const SOURCE = require('../../assets/app.html');
 
 /**
  * Poprawki wstrzykiwane do strony po jej wczytaniu.
