@@ -1,6 +1,18 @@
 # TAPI — aplikacja mobilna
 
-Expo + React Native + TypeScript. Odtworzenie prototypu z `../design_handoff_tapi`.
+# TAPI - Aplikacja
+
+Aplikacja TAPI, rozwijana we współpracy z AI.
+
+## ⚠️ UWAGA DLA INNYCH MODELI AI (CRITICAL RULES) ⚠️
+
+1. **BIAŁY EKRAN (WHITE SCREEN BUG)**: Aplikacja korzysta z autorskiego, prostego parsera DOM (Custom Runtime). Parser ten jest BARDZO WRAŻLIWY na **niezamknięte lub źle zagnieżdżone tagi HTML** (np. `<div>`, `<sc-if>`).
+2. **NIGDY NIE ZOSTAWIAJ ROZBALANSOWANEGO HTML**: Każda edycja pliku `template.html` musi bezwzględnie zachowywać poprawną strukturę tagów (każdy tag otwierający musi mieć odpowiadający mu tag zamykający w odpowiednim miejscu). Jeśli aplikacja po Twoich zmianach ładuje się jako "biały ekran", oznacza to, że w `template.html` jest błąd składniowy (brakujący tag zamykający).
+3. **BUDOWANIE**: Po każdej zmianie w plikach źródłowych (np. `src/app/template.html`, `src/app/logic.js`) **MUSISZ** zbudować aplikację komendą:
+   `node tools/build-app.mjs`
+   Inaczej zmiany nie będą widoczne w `assets/app.html`.
+4. **EDYCJE**: Zawsze bądź niezwykle ostrożny podczas modyfikowania atrybutów lub zawartości wewnątrz dużych struktur (np. modale). Zawsze sprawdzaj, czy nie usunąłeś przez przypadek tagu `</div>`.
+5. **ATRYBUTY EVENTÓW**: Do eventów używamy atrybutów `sc-camel-on-*` (np. `sc-camel-on-click`, `sc-camel-on-pointer-down`). Wszelkie zmienne dynamiczne ze stanu `logic.js` wplatamy używając `{{ nazwaZmiennej }}`.
 
 Stan: **punkt 1 z „Kolejności wdrożenia" — fundament.**
 

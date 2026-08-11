@@ -192,7 +192,7 @@ class Component extends DCLogic {
     notif: { msg: true, prox: false, offers: true, news: false },
     offerState: { happy: true, story: false, vinyl: true }, toast: null,
     interests: [], interestsSaved: false, interestsOpen: false,
-    mapQ: '', mapCat: 'all', mapPanel: 'open', geoAllowed: false, geoDismissed: false, push: false, explored: [],
+    mapQ: '', mapCat: 'all', mapPanel: 'closed', geoAllowed: false, geoDismissed: false, push: false, explored: [],
     pin: null, pinClosing: false, pinShown: false, helpOpen: false, tour: 0, tourDone: false,
     altOpen: false, altPicked: null, billing: 'y', plansOpen: false, plansSeen: false,
     trial: false, trialDays: 14, qty: 10, entered: false,
@@ -360,8 +360,7 @@ class Component extends DCLogic {
       const cur = st.phase === 'biz' ? st.oTab : (st.tab === 'venue' ? 'discover' : st.tab);
       const i = order.indexOf(cur);
       const edge = (i <= 0 && dx > 0) || (i >= order.length - 1 && dx < 0);
-      const soft = edge ? 0.22 : 0.52;
-      const capped = Math.max(-104, Math.min(104, dx * soft));
+      const capped = edge ? dx * 0.22 : dx;
       if (Math.abs(capped - (st.dragX || 0)) > 0.6) this.setState({ dragX: capped, swiped: true });
     }
   }
@@ -381,6 +380,27 @@ class Component extends DCLogic {
     if (i < 0 || i >= order.length) return;
     if (biz) this.goBiz(order[i], dx < 0 ? 1 : -1);
     else this.go(order[i]);
+  }
+
+  sheetSwipeStart(e) {
+    const t = e.target;
+    if (t && t.closest && (t.closest('input') || t.closest('textarea'))) return;
+    this.shSw = { y: e.clientY, lock: null };
+  }
+  sheetSwipeMove(e) {
+    const s = this.shSw; if (!s) return;
+    const dy = e.clientY - s.y;
+    if (!s.lock && dy > 12) s.lock = true;
+    if (s.lock) this.setState({ sheetDragY: Math.max(0, dy) });
+  }
+  sheetSwipeEnd() {
+    const s = this.shSw; this.shSw = null;
+    const d = this.state.sheetDragY || 0;
+    this.setState({ sheetDragY: 0 });
+    if (s && s.lock && d > 60) {
+      this.buzz(8);
+      this.setState({ standOpen: false, coupon: null, langOpen: false, partnersOpen: false, redeemOpen: false, altOpen: false, plansOpen: false, helpOpen: false });
+    }
   }
 
   interestDefs = MOCK.interestDefs;
@@ -564,7 +584,9 @@ class Component extends DCLogic {
       this.markers[v.id] = m;
     });
     this.map.on('move zoom moveend zoomend', () => { this.updateFog(); this.updatePinPos(); });
-    this.map.on('click', () => this.closePin());
+    this.map.on('zoomstart', () => this.setState({ mapZooming: true }));
+    this.map.on('zoomend', () => this.setState({ mapZooming: false }));
+    this.map.on('click', () => { this.closePin(); this.setState({ mapPanel: 'closed' }); });
     setTimeout(() => { if (this.map) { this.map.invalidateSize(); this.updateFog(); } }, 200);
   }
 
@@ -1884,6 +1906,9 @@ class Component extends DCLogic {
         : '0 22px 44px -20px rgba(22,24,28,0.5), 0 4px 12px -6px rgba(22,24,28,0.18)',
       navPillT: st.navDragging ? 'scale(1.09)' : 'none',
       swipeStart: (e) => this.swipeStart(e), swipeMove: (e) => this.swipeMove(e), swipeEnd: (e) => this.swipeEnd(e),
+      sheetSwipeStart: (e) => this.sheetSwipeStart(e), sheetSwipeMove: (e) => this.sheetSwipeMove(e), sheetSwipeEnd: (e) => this.sheetSwipeEnd(e),
+      sheetDragT: st.sheetDragY ? 'translateY(' + st.sheetDragY + 'px)' : 'none',
+      sheetDragEase: st.sheetDragY ? 'none' : 'transform 0.42s cubic-bezier(0.16,1,0.3,1)',
       dragShift: dragPx ? 'translateX(' + dragPx + 'px) scale(' + (1 - Math.min(0.035, Math.abs(dragPx) / 2400)).toFixed(4) + ')' : 'none',
       dragEase: dragPx ? 'none' : 'transform 0.42s cubic-bezier(0.16,1,0.3,1)',
       dragFade: dragPx ? (1 - Math.min(0.14, Math.abs(dragPx) / 900)) : 1,
@@ -3701,6 +3726,7 @@ class Component extends DCLogic {
       mapEmpty: mapList.length === 0,
       mapOpen: (st.mapPanel || 'open') === 'open',
       mapClosed: st.mapPanel === 'closed',
+      mapUiOpacity: st.mapZooming ? 0.25 : 1,
       openMapPanel: () => this.setState({ mapPanel: 'open' }),
       closeMapPanel: () => this.setState({ mapPanel: 'closed' }),
       sortShort: PL ? 'Wysortuj' : 'Sort',

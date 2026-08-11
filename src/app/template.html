@@ -108,7 +108,7 @@
             </div>
           </div>
           <div style="margin-top: 13px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.34em; text-transform: uppercase; color: var(--acct, #1F5A46); animation: fadeIn 0.7s ease 0.5s both;">tap · take · go</div>
-          <div style="font-family: 'Instrument Serif', serif; font-size: 21px; color: var(--ink, #16181C); margin-top: 12px; max-width: 262px; line-height: 1.28; letter-spacing: -0.02em; text-wrap: pretty; animation: rise 0.6s cubic-bezier(0.16,1,0.3,1) 0.16s both;">{{ t.tagline }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 21px; color: var(--ink, #16181C); margin-top: 12px; max-width: 262px; line-height: 1.28; letter-spacing: -0.02em; text-wrap: pretty; animation: rise 0.6s cubic-bezier(0.16,1,0.3,1) 0.16s both;">{{ t.tagline }}</div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 9px; animation: rise 0.65s cubic-bezier(0.16,1,0.3,1) 0.24s both;">
@@ -143,7 +143,7 @@
       <sc-if value="{{ gateOpen }}">
       <div style="position: absolute; inset: 0; z-index: 232;">
         <div sc-camel-on-click="{{ closeGate }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.5); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 22px 30px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both; box-shadow: 0 -30px 60px -40px rgba(22,24,28,0.9);">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 22px 30px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both; box-shadow: 0 -30px 60px -40px rgba(22,24,28,0.9);; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 20px;"></div>
           <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
             <div style="width: 54px; height: 54px; border-radius: 999px; border: 2px solid var(--acct, #1F5A46); position: relative; overflow: hidden; animation: popIn 0.6s cubic-bezier(0.16,1,0.3,1) both;">
@@ -151,7 +151,7 @@
               <div style="position: absolute; left: 50%; top: 50%; width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px; border-radius: 999px; background: var(--acc, #1F5A46); animation: pulseSoft 3s ease-in-out infinite;"></div>
             </div>
           </div>
-          <div style="font-family: 'Instrument Serif', serif; font-size: 28px; letter-spacing: -0.03em; line-height: 1.1; text-align: center; margin-top: 14px; text-wrap: pretty;">{{ gateTitle }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 28px; letter-spacing: -0.03em; line-height: 1.1; text-align: center; margin-top: 14px; text-wrap: pretty;">{{ gateTitle }}</div>
           <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5; text-align: center;">{{ gateBody }}</div>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding: 14px; border-radius: 20px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1));">
             <sc-for list="{{ gatePerks }}" as="p" hint-placeholder-count="3">
@@ -186,7 +186,7 @@
           <sc-if value="{{ mailStep1 }}">
             <div style="animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ t.step1 }}</div>
-              <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px; line-height: 1.08;">{{ mailTitle }}</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px; line-height: 1.08;">{{ mailTitle }}</div>
               <input type="email" ref="{{ emailRef }}" placeholder="imie@mail.com" style="width: 100%; margin-top: 16px; padding: 15px 16px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
               <input type="password" ref="{{ passRef }}" placeholder="Hasło" style="width: 100%; margin-top: 10px; padding: 15px 16px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
               <div sc-camel-on-click="{{ sendCode }}" style="margin-top: 9px; height: 52px; border-radius: 13px; cursor: pointer; background: var(--acc, #1F5A46); color: var(--onacc, #FBFAF7); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;">{{ t.sendCode }}</div>
@@ -215,7 +215,7 @@
           <sc-if value="{{ mailStep2 }}">
             <div style="animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ t.step2 }}</div>
-              <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px;">{{ t.codeTitle }}</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px;">{{ t.codeTitle }}</div>
               <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 7px;">Wpisz 4-cyfrowy kod, który wysłaliśmy na e-mail.</div>
               <div style="margin-top: 20px;">
                 <input type="text" pattern="[0-9]*" inputmode="numeric" autocomplete="one-time-code" maxlength="4" ref="{{ codeRef }}" sc-camel-on-input="{{ onCodeInput }}" placeholder="0000" style="width: 100%; text-align: center; letter-spacing: 0.5em; padding: 18px; border-radius: 16px; background: var(--surf, #FFF); border: 2px solid var(--hair, rgba(22,24,28,0.12)); outline: none; font-size: 28px; font-weight: 600; color: var(--ink, #16181C); transition: border-color 0.2s;">
@@ -225,7 +225,7 @@
           <sc-if value="{{ mailStep3 }}">
             <div style="animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub, #6C6F75);">Krok 1 z 2</div>
-              <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px; line-height: 1.08;">Opowiedz o sobie</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px; line-height: 1.08;">Opowiedz o sobie</div>
               <input type="text" ref="{{ regNameRef }}" placeholder="Imię i nazwisko" style="width: 100%; margin-top: 16px; padding: 15px 16px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
               <input type="text" ref="{{ regUserRef }}" placeholder="Nazwa użytkownika (np. janek99)" style="width: 100%; margin-top: 10px; padding: 15px 16px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
               <div sc-camel-on-click="{{ toAvatarStep }}" style="margin-top: 16px; height: 52px; border-radius: 13px; cursor: pointer; background: var(--acc, #1F5A46); color: var(--onacc, #FBFAF7); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;">Dalej</div>
@@ -234,7 +234,7 @@
           <sc-if value="{{ mailStep4 }}">
             <div style="animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub, #6C6F75);">Krok 2 z 2</div>
-              <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px; line-height: 1.08;">Dodaj zdjęcie profilowe</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px; line-height: 1.08;">Dodaj zdjęcie profilowe</div>
               <div style="display: flex; justify-content: center; margin-top: 24px; margin-bottom: 10px;">
                 <div sc-camel-on-click="{{ pickAvatar }}" style="width: 100px; height: 100px; border-radius: 999px; background: var(--surf, #FFF); border: 2px dashed var(--acct, #1F5A46); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--acct, #1F5A46); transition: transform 0.2s;" style-active="transform: scale(0.95);">
                   <svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
@@ -261,7 +261,7 @@
         <div style="padding: 14px 20px 0;">
           <div style="padding-right: 62px;">
             <div style="font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ subGreeting }}</div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 34px; letter-spacing: -0.03em; line-height: 1.05; margin-top: 8px;">{{ greeting }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 34px; letter-spacing: -0.03em; line-height: 1.05; margin-top: 8px;">{{ greeting }}</div>
           </div>
           
           <!-- AI Planner moved below -->
@@ -365,7 +365,7 @@
                   <svg width="17" height="17" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="1.8" style="animation: floaty 3.6s ease-in-out infinite;"><path d="M12 3.4l1.9 5 5.1 1.9-5.1 1.9-1.9 5-1.9-5L5 10.3l5.1-1.9z" stroke-linejoin="round"></path></svg>
                 </div>
                 <div style="flex: 1; min-width: 0;">
-                  <div style="font-family: 'Instrument Serif', serif; font-size: 22px; letter-spacing: -0.025em; line-height: 1.12;">{{ intTitle }}</div>
+                  <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 22px; letter-spacing: -0.025em; line-height: 1.12;">{{ intTitle }}</div>
                   <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 5px; line-height: 1.45;">{{ intSub }}</div>
                 </div>
               </div>
@@ -409,7 +409,7 @@
         <sc-if value="{{ ready }}">
         <div style="min-height: {{ listMinH }};">
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 12px;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 22px; letter-spacing: -0.02em;">{{ t.today }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 22px; letter-spacing: -0.02em;">{{ t.today }}</div>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span style="width: 5px; height: 5px; border-radius: 999px; background: var(--acc, #1F5A46); animation: dot 1.4s ease-in-out infinite;"></span>
               <span style="font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sub, #6C6F75);">3</span>
@@ -431,7 +431,7 @@
           </div>
 
           <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 28px; padding: 0 20px 12px;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 22px; letter-spacing: -0.02em;">{{ t.near }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 22px; letter-spacing: -0.02em;">{{ t.near }}</div>
             <div style="font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sub, #6C6F75);">900 m</div>
           </div>
           <div style="padding: 0 20px; display: flex; flex-direction: column; gap: 9px;">
@@ -468,7 +468,7 @@
                 <path d="M100 24l1.6 4.3 4.3 1.6-4.3 1.6-1.6 4.3-1.6-4.3-4.3-1.6 4.3-1.6z" stroke="var(--acct, #1F5A46)" stroke-width="1.3" stroke-linejoin="round" opacity="0.6" style="transform-origin: 100px 30px; animation: sparkPop 0.6s cubic-bezier(0.24,1.4,0.4,1) 1.2s both, floaty 3.4s ease-in-out 1.9s infinite;"></path>
                 <path d="M18 66l1.4 3.8 3.8 1.4-3.8 1.4-1.4 3.8-1.4-3.8L12.8 71.2l3.8-1.4z" stroke="var(--acct, #1F5A46)" stroke-width="1.2" stroke-linejoin="round" opacity="0.45" style="transform-origin: 18px 71px; animation: sparkPop 0.6s cubic-bezier(0.24,1.4,0.4,1) 1.35s both, floaty 3.8s ease-in-out 2.1s infinite;"></path>
               </svg>
-              <div style="font-family: 'Instrument Serif', serif; font-size: 24px; letter-spacing: -0.025em; margin-top: 14px;">{{ emptyTitle }}</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 24px; letter-spacing: -0.025em; margin-top: 14px;">{{ emptyTitle }}</div>
               <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 7px; line-height: 1.5;">{{ emptySub }}</div>
               <div sc-camel-on-click="{{ clearAll }}" style="margin: 16px auto 0; display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 15px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; font-size: 13px; font-weight: 600; transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);" style-hover="transform: translateY(-2px);" style-active="transform: scale(0.96);">
                 <svg width="13" height="13" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FBFAF7" stroke-width="2.3"><path d="M20 11a8 8 0 10-2.6 5.9" stroke-linecap="round"></path><path d="M20 5v6h-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -478,18 +478,18 @@
             </sc-if>
           </div>
           <!-- COMPACT AI PLANNER -->
-          <div sc-camel-on-click="{{ openTripPlanner }}" style="margin: 0 20px 20px; padding: 12px 16px; border-radius: 16px; background: linear-gradient(135deg, var(--paper, #F4F2ED) 0%, rgba(87,195,159,0.12) 100%); border: 1px solid var(--acct, #1F5A46); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s;" style-active="transform: scale(0.97);">
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <div style="padding: 2px 6px; border-radius: 4px; background: var(--acc, #1F5A46); color: #FFF; font-size: 8px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;">AI Planner</div>
-                <span style="font-size: 14.5px; font-family: 'Instrument Serif', serif; font-weight: 700; color: var(--ink, #16181C); letter-spacing: -0.01em;">Zaplanuj swój dzień</span>
+          <div sc-camel-on-click="{{ openTripPlanner }}" style="margin: 0 20px 24px; padding: 16px 20px; border-radius: 20px; background: linear-gradient(135deg, var(--paper, #F4F2ED) 0%, rgba(87,195,159,0.18) 100%); border: 1.5px solid var(--acct, #1F5A46); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s; box-shadow: 0 8px 24px -12px rgba(31,90,70,0.3);" style-active="transform: scale(0.97);">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="padding: 3px 8px; border-radius: 6px; background: var(--acc, #1F5A46); color: #FFF; font-size: 9px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;">AI Planner</div>
+                <span style="font-size: 16.5px; font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-weight: 700; color: var(--ink, #16181C); letter-spacing: -0.01em;">Zaplanuj swój dzień</span>
               </div>
             </div>
-            <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.4"><path d="M5 12h13M12 5l7 7-7 7"></path></svg>
+            <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.6"><path d="M5 12h13M12 5l7 7-7 7"></path></svg>
           </div>
 
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; padding: 0 20px 12px;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 22px; letter-spacing: -0.02em;">{{ evHead }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 22px; letter-spacing: -0.02em;">{{ evHead }}</div>
             <div style="font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sub, #6C6F75); flex-shrink: 0;">{{ evCount }}</div>
           </div>
           <div style="display: flex; gap: 7px; overflow-x: auto; padding: 0 20px 2px;" data-noswipe="1">
@@ -534,13 +534,13 @@
       <!-- ░░ MAPA ░░ -->
       <sc-if value="{{ isMap }}">
       <div style="position: absolute; inset: 0; animation: {{ scrIn }}; transform: {{ dragShift }}; transition: {{ dragEase }}; will-change: transform;">
-        <div ref="{{ mapRef }}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div>
+        <div ref="{{ mapRef }}" sc-camel-on-click="{{ closeMapPanel }}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div>
         <sc-if value="{{ mapFail }}">
           <div style="position: absolute; inset: 0; z-index: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 34px; text-align: center; background: var(--paper, #F4F2ED); animation: fadeIn 0.4s ease both;">
             <div style="width: 52px; height: 52px; border-radius: 18px; background: var(--soft, rgba(31,90,70,0.1)); display: flex; align-items: center; justify-content: center;">
               <svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="1.7"><path d="M4 7l5-2 6 2 5-2v12l-5 2-6-2-5 2z" stroke-linejoin="round"></path><path d="M4 4l16 16" stroke-linecap="round"></path></svg>
             </div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 24px; letter-spacing: -0.03em; margin-top: 16px;">{{ mapFailTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 24px; letter-spacing: -0.03em; margin-top: 16px;">{{ mapFailTitle }}</div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5;">{{ mapFailBody }}</div>
             <div sc-camel-on-click="{{ mapRetry }}" style="margin-top: 18px; padding: 13px 20px; border-radius: 15px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; font-size: 13px; font-weight: 600;">{{ mapFailCta }}</div>
           </div>
@@ -588,7 +588,7 @@
         </div>
         </sc-if>
 
-        <div style="position: absolute; top: 48px; left: 14px; right: 14px; z-index: 600;">
+        <div style="position: absolute; top: 48px; left: 14px; right: 14px; z-index: 600; opacity: {{ mapUiOpacity }}; pointer-events: auto; transition: opacity 0.3s ease;">
           <!-- Pasek górny mapy: Logo + Wyszukiwarka + Znajomi + Krzyżyk Zamknij -->
           <div style="display: flex; align-items: center; gap: 8px;">
             <!-- Wyszukiwarka na mapie (poszerzona) -->
@@ -603,9 +603,8 @@
               <span style="font-size: 11px; font-weight: 700;">3</span>
             </div>
 
-            <!-- Awatar Użytkownika (po prawej) w kółku -->
-            <div sc-camel-on-click="{{ closeMapToDiscover }}" style="width: 44px; height: 44px; border-radius: 999px; background: url('https://i.pravatar.cc/150?img=68') center/cover; border: 2px solid var(--surf, #FFF); box-shadow: 0 12px 24px -16px rgba(22,24,28,0.7); cursor: pointer; flex-shrink: 0;" style-active="transform: scale(0.96);">
-            </div>
+            <!-- Miejsce na prawdziwy awatar -->
+            <div style="width: 44px; flex-shrink: 0;"></div>
           </div>
 
           <!-- Pigułka "Co warto zobaczyć w okolicy" -->
@@ -632,26 +631,24 @@
         </div>
 
         <sc-if value="{{ geoAsk }}">
-        <div style="position: absolute; left: 14px; right: 14px; top: 120px; z-index: 610;">
-          <div style="padding: 16px; border-radius: 20px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.25); animation: popIn 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-            <div style="display: flex; align-items: flex-start; gap: 12px;">
-              <div style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; background: var(--soft, rgba(31,90,70,0.1)); display: flex; align-items: center; justify-content: center;">
-                <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <div style="position: absolute; inset: 0; z-index: 610; display: flex; align-items: center; justify-content: center; padding: 0 24px; pointer-events: none; opacity: {{ mapUiOpacity }}; transition: opacity 0.3s ease;">
+          <div style="width: 100%; max-width: 320px; pointer-events: auto; padding: 18px; border-radius: 24px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 24px 48px -12px rgba(22,24,28,0.25); animation: popIn 0.5s cubic-bezier(0.16,1,0.3,1) both;">
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+              <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--soft, rgba(31,90,70,0.08)); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
-              <div style="flex: 1; min-width: 0;">
-                <div style="font-family: 'Instrument Serif', serif; font-size: 19px; letter-spacing: -0.02em; line-height: 1.1;">Zezwól na położenie</div>
-                <div style="font-size: 11.5px; color: var(--sub, #6C6F75); margin-top: 4px; line-height: 1.4;">Zobaczymy, gdzie jesteś i ułożymy listę miejsc w okolicy.</div>
-              </div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1;">Lokalizacja</div>
+              <div style="font-size: 13px; color: var(--sub, #6C6F75); margin-top: 6px; line-height: 1.4;">Włącz, aby zobaczyć najciekawsze miejsca w Twojej okolicy.</div>
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 14px;">
-              <div sc-camel-on-click="{{ dismissGeo }}" style="flex: 1; height: 42px; border-radius: 12px; cursor: pointer; border: 1px solid var(--hair, rgba(22,24,28,0.15)); display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600; color: var(--sub, #6C6F75);">Później</div>
-              <div sc-camel-on-click="{{ allowGeo }}" style="flex: 1.5; height: 42px; border-radius: 12px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600;">Włącz</div>
+            <div style="display: flex; gap: 8px; margin-top: 18px;">
+              <div sc-camel-on-click="{{ dismissGeo }}" style="flex: 1; height: 44px; border-radius: 14px; cursor: pointer; background: var(--paper, #F4F2ED); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--ink, #16181C);">Później</div>
+              <div sc-camel-on-click="{{ allowGeo }}" style="flex: 1; height: 44px; border-radius: 14px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; box-shadow: 0 8px 16px -8px var(--acc, #1F5A46);">Zezwól</div>
             </div>
           </div>
         </div>
         </sc-if>
 
-        <div style="position: absolute; left: 0; right: 0; bottom: 98px; z-index: 600; padding: 0 14px;">
+        <div style="position: absolute; left: 0; right: 0; bottom: 98px; z-index: 600; padding: 0 14px; opacity: {{ mapUiOpacity }}; pointer-events: auto; transition: opacity 0.3s ease;">
           <sc-if value="{{ mapClosed }}">
             <div style="display: flex; gap: 8px; animation: popIn 0.5s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="flex: 1;"></div>
@@ -739,13 +736,9 @@
           </sc-if>
           <sc-if value="{{ scanIdle }}">
             <div style="animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-              <div style="font-family: 'Instrument Serif', serif; font-size: 27px; line-height: 1.1; letter-spacing: -0.025em;">{{ t.scanTitle }}</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 27px; line-height: 1.1; letter-spacing: -0.025em;">{{ t.scanTitle }}</div>
               <div style="font-size: 12.5px; color: rgba(244,242,237,0.6); margin-top: 9px; line-height: 1.5;">{{ t.scanSub }}</div>
-              <div sc-camel-on-click="{{ doScan }}" style="margin: 20px auto 0; width: 200px; height: 50px; border-radius: 14px; cursor: pointer; background: var(--accl, #57C39F); color: #14161A; display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 13.5px; font-weight: 600; position: relative;">
-                <div style="position: absolute; inset: -6px; border-radius: 18px; border: 1px solid var(--accl, #57C39F); animation: ringOut 2.4s cubic-bezier(0.16,1,0.3,1) infinite;"></div>
-                <span>{{ t.scanBtn }}</span>
-                <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="#14161A" stroke-width="2.4"><path d="M5 12h13"></path><path d="M13 6l6 6-6 6"></path></svg>
-              </div>
+              
               <sc-if value="{{ bizAccount }}">
                 <div sc-camel-on-click="{{ openRedeem }}" style="margin: 14px auto 0; display: flex; align-items: center; gap: 10px; padding: 12px 15px; border-radius: 16px; cursor: pointer; background: rgba(244,242,237,0.07); border: 1px solid rgba(244,242,237,0.16); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);" style-hover="transform: translateY(-2px);">
                   <div style="width: 32px; height: 32px; border-radius: 11px; flex-shrink: 0; background: var(--accl, #57C39F); display: flex; align-items: center; justify-content: center;">
@@ -779,19 +772,7 @@
                   <span>{{ scannedLabel }}</span>
                 </div>
               </sc-if>
-              <div sc-camel-on-click="{{ toggleFollow }}" style="width: 38px; height: 38px; border-radius: 11px; cursor: pointer; background: {{ followBtnBg }}; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 18px -12px rgba(22,24,28,0.8); transition: background 0.35s ease, transform 0.32s cubic-bezier(0.28,1.4,0.4,1);" style-active="transform: scale(0.9);">
-                <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="{{ followBtnFg }}" stroke-width="2"><path d="M18 15V10a6 6 0 10-12 0v5l-1.5 2.5h15z" stroke-linejoin="round"></path><path d="M10 19a2 2 0 004 0" stroke-linecap="round"></path></svg>
               </div>
-              <div sc-camel-on-click="{{ saveVenue }}" style="width: 38px; height: 38px; border-radius: 11px; cursor: pointer; background: rgba(255,255,255,0.94); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 18px -12px rgba(22,24,28,0.8);">
-                <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="{{ vSavedFill }}" stroke="#16181C" stroke-width="1.7"><path d="M6 4h12v16l-6-4.5L6 20z"></path></svg>
-              </div>
-              <div sc-camel-on-click="{{ openVenueMenu }}" style="width: 38px; height: 38px; border-radius: 11px; cursor: pointer; background: rgba(255,255,255,0.94); display: flex; align-items: center; justify-content: center; gap: 3px; box-shadow: 0 8px 18px -12px rgba(22,24,28,0.8); transition: transform 0.32s cubic-bezier(0.28,1.4,0.4,1);" style-active="transform: scale(0.9);">
-                <span style="width: 3.4px; height: 3.4px; border-radius: 999px; background: #16181C;"></span>
-                <span style="width: 3.4px; height: 3.4px; border-radius: 999px; background: #16181C;"></span>
-                <span style="width: 3.4px; height: 3.4px; border-radius: 999px; background: #16181C;"></span>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div style="padding: 0 16px;">
@@ -826,7 +807,7 @@
               <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.2"><path d="M9 5l7 7-7 7"></path></svg>
             </div>
 
-            <div style="font-family: 'Instrument Serif', serif; font-size: 34px; letter-spacing: -0.03em; line-height: 1.04; margin-top: 6px;">{{ vName }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 34px; letter-spacing: -0.03em; line-height: 1.04; margin-top: 6px;">{{ vName }}</div>
             <div style="display: flex; align-items: center; gap: 7px; margin-top: 9px; font-size: 12.5px; color: var(--sub, #6C6F75);">
               <span style="font-weight: 700; color: var(--ink, #16181C);">{{ vRating }}</span>
               <span style="color: var(--acct, #1F5A46);">★★★★★</span>
@@ -908,7 +889,7 @@
 
           <!-- relacje -->
           <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 22px;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 21px; letter-spacing: -0.02em;">{{ t.stories }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 21px; letter-spacing: -0.02em;">{{ t.stories }}</div>
           </div>
           <div style="display: flex; gap: 9px; overflow-x: auto; margin: 11px -16px 0; padding: 0 16px 4px;" data-noswipe="1">
             <sc-for list="{{ vStories }}" as="s" hint-placeholder-count="3">
@@ -923,7 +904,7 @@
           </div>
 
           <!-- menu -->
-          <div style="font-family: 'Instrument Serif', serif; font-size: 21px; letter-spacing: -0.02em; margin-top: 22px;">{{ t.menu }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 21px; letter-spacing: -0.02em; margin-top: 22px;">{{ t.menu }}</div>
           <div style="margin-top: 11px; border-radius: 16px; overflow: hidden; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1));">
             <sc-for list="{{ vMenu }}" as="m" hint-placeholder-count="3">
               <div style="display: flex; align-items: center; gap: 12px; padding: 13px 15px; border-bottom: 1px solid var(--hair, rgba(22,24,28,0.07)); animation: rise 0.45s cubic-bezier(0.16,1,0.3,1) both; animation-delay: {{ m.delay }};">
@@ -938,7 +919,7 @@
 
           <!-- opinie -->
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 22px;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 21px; letter-spacing: -0.02em;">{{ t.reviews }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 21px; letter-spacing: -0.02em;">{{ t.reviews }}</div>
             <div sc-camel-on-click="{{ toggleRevSort }}" style="display: flex; align-items: center; gap: 7px; flex-shrink: 0; cursor: pointer; padding: 8px 12px; border-radius: 999px; background: {{ revSortBg }}; border: 1px solid {{ revSortBorder }}; transition: all 0.35s cubic-bezier(0.16,1,0.3,1);" style-active="transform: scale(0.95);">
               <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="{{ revSortFg }}" stroke-width="2.3"><path d="M4 7h16M7 12h10M10 17h4" stroke-linecap="round"></path></svg>
               <span style="font-size: 11.5px; font-weight: 600; color: {{ revSortFg }};">{{ revSortLabel }}</span>
@@ -1008,7 +989,7 @@
           <sc-if value="{{ hasPartners }}">
           <div>
             <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 24px;">
-              <div style="font-family: 'Instrument Serif', serif; font-size: 21px; letter-spacing: -0.02em;">{{ partnersTitle }}</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 21px; letter-spacing: -0.02em;">{{ partnersTitle }}</div>
               <div style="font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sub, #6C6F75); flex-shrink: 0;">{{ partnersKicker }}</div>
             </div>
             <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 6px; line-height: 1.5;">{{ partnersNote }}</div>
@@ -1050,7 +1031,7 @@
         <div style="padding: 14px 20px 0; animation: rise 0.55s cubic-bezier(0.16,1,0.3,1) both;">
           <div style="padding-right: 62px;">
             <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ introKicker }}</div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 29px; letter-spacing: -0.035em; line-height: 1.06; margin-top: 7px; text-wrap: pretty;">{{ introTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 29px; letter-spacing: -0.035em; line-height: 1.06; margin-top: 7px; text-wrap: pretty;">{{ introTitle }}</div>
           </div>
           <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 9px; line-height: 1.5; text-wrap: pretty;">{{ introLead }}</div>
 
@@ -1126,7 +1107,7 @@
         <!-- krok 1: dni -->
         <sc-if value="{{ tripStep0 }}">
         <div style="padding: 22px 20px 0; animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-          <div style="font-family: 'Instrument Serif', serif; font-size: 32px; letter-spacing: -0.035em; line-height: 1.06; text-wrap: pretty;">{{ tripTitle0 }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 32px; letter-spacing: -0.035em; line-height: 1.06; text-wrap: pretty;">{{ tripTitle0 }}</div>
           <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 9px; line-height: 1.5;">{{ tripSub0 }}</div>
 
           <div style="margin-top: 20px; padding: 20px 18px 16px; border-radius: 26px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 20px 44px -34px rgba(22,24,28,0.9); animation: popIn 0.65s cubic-bezier(0.16,1,0.3,1) both;">
@@ -1177,7 +1158,7 @@
         <!-- krok 2: budżet -->
         <sc-if value="{{ tripStep1 }}">
         <div style="padding: 22px 20px 0; animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-          <div style="font-family: 'Instrument Serif', serif; font-size: 32px; letter-spacing: -0.035em; line-height: 1.06; text-wrap: pretty;">{{ tripTitle1 }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 32px; letter-spacing: -0.035em; line-height: 1.06; text-wrap: pretty;">{{ tripTitle1 }}</div>
           <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 9px; line-height: 1.5;">{{ tripSub1 }}</div>
 
           <div style="margin-top: 20px; padding: 20px 18px; border-radius: 26px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 20px 44px -34px rgba(22,24,28,0.9); animation: popIn 0.65s cubic-bezier(0.16,1,0.3,1) both;">
@@ -1232,7 +1213,7 @@
         <!-- krok 3: zainteresowania + tempo -->
         <sc-if value="{{ tripStep2 }}">
         <div style="padding: 22px 20px 0; animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-          <div style="font-family: 'Instrument Serif', serif; font-size: 32px; letter-spacing: -0.035em; line-height: 1.06; text-wrap: pretty;">{{ tripTitle2 }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 32px; letter-spacing: -0.035em; line-height: 1.06; text-wrap: pretty;">{{ tripTitle2 }}</div>
           <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 9px; line-height: 1.5;">{{ tripSub2 }}</div>
 
           <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px;">
@@ -1282,7 +1263,7 @@
             </g>
             <circle cx="181" cy="50" r="18" fill="var(--acct, #1F5A46)" opacity="0.14" style="transform-origin: 181px 50px; animation: ringOut 2.4s cubic-bezier(0.16,1,0.3,1) 1.6s infinite;"></circle>
           </svg>
-          <div style="font-family: 'Instrument Serif', serif; font-size: 26px; letter-spacing: -0.03em; margin-top: 14px;">{{ tripBusyLabel }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 26px; letter-spacing: -0.03em; margin-top: 14px;">{{ tripBusyLabel }}</div>
           <div style="display: flex; flex-direction: column; gap: 11px; margin-top: 20px; width: 100%;">
             <sc-for list="{{ tripBusySteps }}" as="s" hint-placeholder-count="3">
               <div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 16px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); animation: tickIn 0.5s cubic-bezier(0.16,1,0.3,1) both; animation-delay: {{ s.delay }};">
@@ -1302,7 +1283,7 @@
           <div style="padding: 16px 20px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
             <div style="flex: 1; min-width: 0;">
               <div style="font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ tripKicker }}</div>
-              <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.06; margin-top: 7px;">{{ tripPlanTitle }}</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.06; margin-top: 7px;">{{ tripPlanTitle }}</div>
             </div>
             <div sc-camel-on-click="{{ tripEdit }}" style="flex-shrink: 0; cursor: pointer; padding: 9px 13px; border-radius: 13px; border: 1px solid var(--hair, rgba(22,24,28,0.12)); font-size: 11.5px; font-weight: 600; color: var(--acct, #1F5A46);">{{ tripEditLabel }}</div>
           </div>
@@ -1398,7 +1379,7 @@
       <sc-if value="{{ isSaved }}">
       <div style="position: absolute; inset: 0; overflow-y: auto; padding: 54px 0 128px; animation: {{ scrIn }}; transform: {{ dragShift }}; transition: {{ dragEase }}; will-change: transform;">
         <div style="padding: 16px 20px 0;">
-          <div style="font-family: 'Instrument Serif', serif; font-size: 32px; letter-spacing: -0.03em;">{{ t.saved }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 32px; letter-spacing: -0.03em;">{{ t.saved }}</div>
         </div>
         <div style="padding: 14px 16px 0;">
           <div style="display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1));">
@@ -1503,7 +1484,7 @@
                 <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
               </div>
               <div style="flex: 1; min-width: 0;">
-                <div style="font-family: 'Instrument Serif', serif; font-size: 22px; letter-spacing: -0.025em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ colName }}</div>
+                <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 22px; letter-spacing: -0.025em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ colName }}</div>
                 <div style="font-size: 11.5px; color: var(--sub, #6C6F75); margin-top: 2px;">{{ colCount }}</div>
               </div>
               <div sc-camel-on-click="{{ colDelete }}" style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 11px; cursor: pointer; color: var(--sub, #6C6F75); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" style-hover="background: var(--soft, rgba(31,90,70,0.1));">
@@ -1581,7 +1562,7 @@
       <div style="position: absolute; inset: 0; overflow-y: auto; padding: 54px 0 128px; animation: {{ scrIn }}; transform: {{ dragShift }}; transition: {{ dragEase }}; will-change: transform;">
         <div style="padding: 14px 20px 0; margin-bottom: 12px;">
           <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub, #6C6F75);">SPOŁECZNOŚĆ TAPI</div>
-          <div style="font-family: 'Instrument Serif', serif; font-size: 34px; letter-spacing: -0.03em; margin-top: 4px;">Twoja Ekipa & Ranking</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 34px; letter-spacing: -0.03em; margin-top: 4px;">Twoja Ekipa & Ranking</div>
         </div>
 
         <div style="padding: 0 16px;">
@@ -1718,7 +1699,7 @@
           <div style="display: flex; align-items: center; gap: 13px; padding: 2px 4px 0;">
             <div style="width: {{ profAvaSize }}; height: {{ profAvaSize }}; border-radius: 999px; flex-shrink: 0; background: var(--soft, rgba(31,90,70,0.1)); color: var(--acct, #1F5A46); display: flex; align-items: center; justify-content: center; font-size: {{ profAvaFont }}; font-weight: 600; transition: all 0.45s cubic-bezier(0.16,1,0.3,1);">{{ userInitial }}</div>
             <div style="flex: 1; min-width: 0;">
-              <div style="font-family: 'Instrument Serif', serif; font-size: {{ profNameFont }}; letter-spacing: -0.025em; line-height: 1.1; transition: font-size 0.45s cubic-bezier(0.16,1,0.3,1);">{{ userName }}</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: {{ profNameFont }}; letter-spacing: -0.025em; line-height: 1.1; transition: font-size 0.45s cubic-bezier(0.16,1,0.3,1);">{{ userName }}</div>
               <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 3px; max-height: {{ profMailH }}; opacity: {{ profMailOp }}; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease;">{{ userMail }}</div>
             </div>
           </div>
@@ -1740,7 +1721,7 @@
                 <div style="position: absolute; left: 50%; top: 50%; width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px; border-radius: 999px; background: var(--acc, #1F5A46); animation: pulseSoft 3s ease-in-out infinite;"></div>
               </div>
             </div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 27px; letter-spacing: -0.03em; line-height: 1.12; text-align: center; margin-top: 16px; text-wrap: pretty;">{{ anonTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 27px; letter-spacing: -0.03em; line-height: 1.12; text-align: center; margin-top: 16px; text-wrap: pretty;">{{ anonTitle }}</div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5; text-align: center;">{{ anonBody }}</div>
             <div style="display: flex; flex-direction: column; gap: 9px; margin-top: 18px;">
               <sc-for list="{{ gatePerks }}" as="p" hint-placeholder-count="3">
@@ -1798,7 +1779,7 @@
             </div>
             <div style="flex: 1; min-width: 0;">
               <div style="font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(244,242,237,0.6);">{{ standPlanTag }}</div>
-              <div style="font-family: 'Instrument Serif', serif; font-size: 24px; letter-spacing: -0.03em; line-height: 1.1; margin-top: 7px;">{{ standCardTitle }}</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 24px; letter-spacing: -0.03em; line-height: 1.1; margin-top: 7px;">{{ standCardTitle }}</div>
               <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 9px;">
                 <span style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.04em;">{{ standPriceNow }}</span>
                 <sc-if value="{{ standHasWas }}">
@@ -1917,7 +1898,7 @@
                 <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
               </div>
               <div style="flex: 1; min-width: 0;">
-                <div style="font-family: 'Instrument Serif', serif; font-size: 22px; letter-spacing: -0.025em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ colName }}</div>
+                <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 22px; letter-spacing: -0.025em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ colName }}</div>
                 <div style="font-size: 11.5px; color: var(--sub, #6C6F75); margin-top: 2px;">{{ colCount }}</div>
               </div>
               <div sc-camel-on-click="{{ colDelete }}" style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 11px; cursor: pointer; color: var(--sub, #6C6F75); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" style-hover="background: var(--soft, rgba(31,90,70,0.1));">
@@ -2404,7 +2385,7 @@
           </div>
           <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px;">
             <div style="width: 24px; height: 24px; border-radius: 999px; background: var(--acc, #1F5A46); display: flex; align-items: center; justify-content: center; color: #FFF; font-size: 11px; font-weight: 800;">T</div>
-            <span style="font-family: 'Instrument Serif', serif; font-size: 19px; font-weight: 700; color: var(--ink, #16181C);">TAPI dla Firm</span>
+            <span style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 700; color: var(--ink, #16181C);">TAPI dla Firm</span>
           </div>
           <div sc-camel-on-click="{{ openHelp }}" style="width: 38px; height: 38px; border-radius: 12px; cursor: pointer; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--acct, #1F5A46);">?</div>
         </div>
@@ -2424,7 +2405,7 @@
         <sc-if value="{{ isBizLoginActive }}">
         <div style="padding: 0 18px 44px; animation: rise 0.4s ease both;">
           <div style="padding: 22px 18px; border-radius: 22px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 20px 40px -30px rgba(22,24,28,0.7);">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 28px; letter-spacing: -0.03em; line-height: 1.1; color: var(--ink, #16181C);">Zaloguj się do panelu lokalu</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 28px; letter-spacing: -0.03em; line-height: 1.1; color: var(--ink, #16181C);">Zaloguj się do panelu lokalu</div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 6px; line-height: 1.45;">Dostęp do zarządzania wizytówką, statystykami gości, kuponami i menu.</div>
 
             <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 14px;">
@@ -2494,7 +2475,7 @@
                 <circle cx="16" cy="153" r="4.6" fill="var(--acct, #1F5A46)" opacity="0.35" style="animation: walkIn 3.3s cubic-bezier(0.4,0,0.25,1) 2.2s infinite;"></circle>
               </svg>
             </div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 34px; line-height: 1.06; letter-spacing: -0.035em; margin-top: 22px; text-wrap: pretty;">{{ bizIntroTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 34px; line-height: 1.06; letter-spacing: -0.035em; margin-top: 22px; text-wrap: pretty;">{{ bizIntroTitle }}</div>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 18px;">
               <sc-for list="{{ bizIntroPoints }}" as="p" hint-placeholder-count="3">
                 <div style="display: flex; gap: 13px; padding: 13px 14px; border-radius: 20px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 14px 28px -26px rgba(22,24,28,0.9); animation: stagger 0.62s cubic-bezier(0.16,1,0.3,1) both; animation-delay: {{ p.delay }};">
@@ -2528,7 +2509,7 @@
 
           <sc-if value="{{ step1 }}">
           <div style="animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.08;">{{ searchTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.08;">{{ searchTitle }}</div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 8px;">{{ searchSub }}</div>
             <sc-if value="{{ notManual }}" hint-placeholder-val="{{ true }}">
               <div>
@@ -2614,7 +2595,7 @@
 
           <sc-if value="{{ step2 }}">
           <div style="animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.08;">{{ verifyTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.08;">{{ verifyTitle }}</div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5;">{{ verifySub }}</div>
             <div style="margin-top: 18px; padding: 18px; border-radius: 20px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 14px 34px -28px rgba(22,24,28,0.9);">
               <div style="font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ verifyFrom }}</div>
@@ -2664,7 +2645,7 @@
 
           <sc-if value="{{ step3 }}">
           <div style="animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.08;">{{ sumTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.08;">{{ sumTitle }}</div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 8px;">{{ sumSub }}</div>
             <div style="margin-top: 16px; border-radius: 20px; overflow: hidden; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1));">
               <sc-for list="{{ sumRows }}" as="r" hint-placeholder-count="6">
@@ -2689,7 +2670,7 @@
           <div style="padding: 0 4px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
             <div style="flex: 1; min-width: 0;">
               <div style="font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ bizVenueName }}</div>
-              <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 6px; line-height: 1.06;">{{ ownerTitle }}</div>
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 6px; line-height: 1.06;">{{ ownerTitle }}</div>
             </div>
             <div sc-camel-on-click="{{ openPlans }}" style="flex-shrink: 0; cursor: pointer; padding: 8px 12px; border-radius: 13px; background: {{ planChipBg }}; color: {{ planChipFg }}; border: 1px solid {{ planChipBorder }}; display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);" style-hover="transform: translateY(-2px);">
               <span>{{ planName }}</span>
@@ -2766,7 +2747,7 @@
                   <div style="position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(22,24,28,0.55));"></div>
                   <div style="position: absolute; bottom: 12px; left: 11px; right: 11px; color: #F4F2ED;">
                     <div style="font-size: 9px; letter-spacing: 0.14em; opacity: 0.85;">NOKTURN · KAZIMIERZ</div>
-                    <div style="font-family: 'Instrument Serif', serif; font-size: 19px; line-height: 1.1; margin-top: 5px;">{{ storyHeadline }}</div>
+                    <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 19px; line-height: 1.1; margin-top: 5px;">{{ storyHeadline }}</div>
                   </div>
                   <div style="position: absolute; top: 11px; left: 11px; padding: 3px 7px; border-radius: 5px; background: rgba(255,255,255,0.9); font-size: 8px; font-weight: 700; color: #16181C;">1080×1920</div>
                 </div>
@@ -2807,7 +2788,7 @@
             <div style="margin-top: 14px; padding: 16px; border-radius: 20px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); display: flex; gap: 14px; align-items: flex-start; animation: stagger 0.5s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="flex: 1; min-width: 0;">
                 <div style="font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ stickerLabel }}</div>
-                <div style="font-family: 'Instrument Serif', serif; font-size: 23px; letter-spacing: -0.025em; margin-top: 6px; line-height: 1.1;">{{ stickerTitle }}</div>
+                <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 23px; letter-spacing: -0.025em; margin-top: 6px; line-height: 1.1;">{{ stickerTitle }}</div>
                 <div sc-camel-on-click="{{ downloadQR }}" style="margin-top: 12px; height: 44px; border-radius: 13px; cursor: pointer; border: 1px solid var(--hair, rgba(22,24,28,0.14)); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12.5px; font-weight: 600;">
                   <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11"></path><path d="M7 11l5 5 5-5"></path><path d="M5 20h14"></path></svg>
                   <span>{{ stickerCta }}</span>
@@ -2837,7 +2818,7 @@
                 </div>
                 <div style="flex: 1; min-width: 0;">
                   <div style="font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.7;">{{ standKicker }}</div>
-                  <div style="font-family: 'Instrument Serif', serif; font-size: 22px; letter-spacing: -0.025em; margin-top: 5px; line-height: 1.1;">{{ standTitle }}</div>
+                  <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 22px; letter-spacing: -0.025em; margin-top: 5px; line-height: 1.1;">{{ standTitle }}</div>
                   <div style="font-size: 11.5px; opacity: 0.75; margin-top: 6px; line-height: 1.45;">{{ standCardSub }}</div>
                   <div style="display: inline-flex; align-items: center; gap: 7px; margin-top: 11px; padding: 9px 13px; border-radius: 13px; background: {{ standCtaBg }}; color: {{ standCtaFg }}; font-size: 12.5px; font-weight: 600;">
                     <span>{{ standCardCta }}</span>
@@ -2854,7 +2835,7 @@
                   <span style="position: absolute; inset: 0; border-radius: 14px; border: 1px solid var(--acct, #1F5A46); opacity: 0.3; animation: pulseSoft 2.6s ease-in-out infinite;"></span>
                 </div>
                 <div style="flex: 1; min-width: 0;">
-                  <div style="font-family: 'Instrument Serif', serif; font-size: 22px; letter-spacing: -0.025em; line-height: 1.12;">{{ orderTitle }}</div>
+                  <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 22px; letter-spacing: -0.025em; line-height: 1.12;">{{ orderTitle }}</div>
                   <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 5px; line-height: 1.45;">{{ orderSub }}</div>
                 </div>
               </div>
@@ -2935,7 +2916,7 @@
             <sc-if value="{{ subMenu }}">
             <div>
               <div style="margin-top: 14px; padding: 18px 16px; border-radius: 22px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-                <div style="font-family: 'Instrument Serif', serif; font-size: 25px; letter-spacing: -0.03em; line-height: 1.1; text-wrap: pretty;">{{ menuTitle }}</div>
+                <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 25px; letter-spacing: -0.03em; line-height: 1.1; text-wrap: pretty;">{{ menuTitle }}</div>
                 <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5;">{{ menuLead }}</div>
                 <div style="display: flex; align-items: center; gap: 9px; margin-top: 14px; padding: 11px 13px; border-radius: 15px; background: var(--soft, rgba(31,90,70,0.09));">
                   <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="1.8" style="flex-shrink: 0;"><circle cx="12" cy="12" r="8.5"></circle><path d="M3.5 12h17M12 3.5c2.5 2.6 2.5 14.4 0 17M12 3.5c-2.5 2.6-2.5 14.4 0 17"></path></svg>
@@ -3014,7 +2995,7 @@
                   </div>
                 </div>
                 <div style="padding: 15px 16px 18px;">
-                  <div style="font-family: 'Instrument Serif', serif; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1;">{{ cardName }}</div>
+                  <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1;">{{ cardName }}</div>
                   <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sub, #6C6F75); margin-top: 6px;">
                     <span style="color: var(--acct, #1F5A46); font-weight: 600;">★ {{ cardRating }}</span>
                     <span>{{ cardVotes }}</span><span>·</span><span>{{ cardMeta }}</span>
@@ -3442,10 +3423,10 @@
       <sc-if value="{{ sortOpen }}">
       <div style="position: absolute; inset: 0; z-index: 236;">
         <div sc-camel-on-click="{{ closeSort }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.45); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; max-height: 88%; overflow-y: auto; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 26px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both; box-shadow: 0 -30px 60px -40px rgba(22,24,28,0.9);" data-noswipe="1">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; max-height: 88%; overflow-y: auto; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 26px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both; box-shadow: 0 -30px 60px -40px rgba(22,24,28,0.9);; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" data-noswipe="1" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div sc-camel-on-click="{{ closeSort }}" style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 16px; cursor: pointer;"></div>
           <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 27px; letter-spacing: -0.03em;">{{ sortTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 27px; letter-spacing: -0.03em;">{{ sortTitle }}</div>
             <div sc-camel-on-click="{{ resetSort }}" style="cursor: pointer; flex-shrink: 0; font-size: 11.5px; font-weight: 600; color: var(--acct, #1F5A46);">{{ sortResetLabel }}</div>
           </div>
           <div style="font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub, #6C6F75); margin-top: 18px;">{{ catHead }}</div>
@@ -3509,7 +3490,7 @@
       <sc-if value="{{ venueMenuOpen }}">
       <div style="position: absolute; inset: 0; z-index: 700;">
         <div sc-camel-on-click="{{ closeVenueMenu }}" style="position: absolute; inset: 0; background: rgba(14,16,20,0.5); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fadeIn 0.28s ease both;"></div>
-        <div style="position: absolute; left: 12px; right: 12px; bottom: 20px; border-radius: 26px; overflow: hidden; background: var(--surf, #FFF); box-shadow: 0 30px 60px -30px rgba(22,24,28,0.9); animation: sheetUp 0.5s cubic-bezier(0.16,1,0.3,1) both;">
+        <div style="position: absolute; left: 12px; right: 12px; bottom: 20px; border-radius: 26px; overflow: hidden; background: var(--surf, #FFF); box-shadow: 0 30px 60px -30px rgba(22,24,28,0.9); animation: sheetUp 0.5s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div style="padding: 16px 18px 12px; border-bottom: 1px solid var(--hair, rgba(22,24,28,0.09));">
             <div style="font-size: 14.5px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ vName }}</div>
             <div style="font-size: 11.5px; color: var(--sub, #6C6F75); margin-top: 3px;">{{ vCat }} · {{ vDistrict }}</div>
@@ -3536,9 +3517,9 @@
       <sc-if value="{{ reportOpen }}">
       <div style="position: absolute; inset: 0; z-index: 710;">
         <div sc-camel-on-click="{{ closeReport }}" style="position: absolute; inset: 0; background: rgba(14,16,20,0.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fadeIn 0.28s ease both;"></div>
-        <div style="position: absolute; left: 12px; right: 12px; bottom: 20px; border-radius: 26px; overflow: hidden; background: var(--surf, #FFF); box-shadow: 0 30px 60px -30px rgba(22,24,28,0.9); animation: sheetUp 0.5s cubic-bezier(0.16,1,0.3,1) both;">
+        <div style="position: absolute; left: 12px; right: 12px; bottom: 20px; border-radius: 26px; overflow: hidden; background: var(--surf, #FFF); box-shadow: 0 30px 60px -30px rgba(22,24,28,0.9); animation: sheetUp 0.5s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div style="padding: 18px 18px 14px;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 24px; letter-spacing: -0.025em;">{{ reportTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 24px; letter-spacing: -0.025em;">{{ reportTitle }}</div>
             <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 6px; line-height: 1.5;">{{ reportSub }}</div>
           </div>
           <sc-for list="{{ reportReasons }}" as="r" hint-placeholder-count="5">
@@ -3559,7 +3540,7 @@
       <sc-if value="{{ mapStatsOpen }}">
       <div style="position: absolute; inset: 0; z-index: 700;">
         <div sc-camel-on-click="{{ closeMapStats }}" style="position: absolute; inset: 0; background: rgba(14,16,20,0.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; inset: 0; top: 42px; overflow-y: auto; border-radius: 30px 30px 0 0; background: var(--paper, #F4F2ED); padding: 12px 0 34px; animation: sheetUp 0.6s cubic-bezier(0.16,1,0.3,1) both;">
+        <div style="position: absolute; inset: 0; top: 42px; overflow-y: auto; border-radius: 30px 30px 0 0; background: var(--paper, #F4F2ED); padding: 12px 0 34px; animation: sheetUp 0.6s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div sc-camel-on-click="{{ closeMapStats }}" style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 16px; cursor: pointer;"></div>
 
           <div style="padding: 0 20px;">
@@ -3576,7 +3557,7 @@
                 </div>
               </div>
               <div style="flex: 1; min-width: 0;">
-                <div style="font-family: 'Instrument Serif', serif; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1; text-wrap: pretty;">{{ statsTitle }}</div>
+                <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1; text-wrap: pretty;">{{ statsTitle }}</div>
                 <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5;">{{ progCity }}</div>
               </div>
             </div>
@@ -3624,7 +3605,7 @@
             <div style="width: 46px; height: 46px; border-radius: 16px; background: rgba(196,74,58,0.12); display: flex; align-items: center; justify-content: center;">
               <svg width="21" height="21" sc-camel-view-box="0 0 24 24" fill="none" stroke="#C44A3A" stroke-width="1.9"><path d="M5 7h14M9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7" stroke-linecap="round"></path><path d="M7 7l1 12.5A1.5 1.5 0 009.5 21h5a1.5 1.5 0 001.5-1.5L17 7" stroke-linejoin="round"></path></svg>
             </div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1; margin-top: 14px; text-wrap: pretty;">{{ delTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1; margin-top: 14px; text-wrap: pretty;">{{ delTitle }}</div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 9px; line-height: 1.5;">{{ delBody }}</div>
 
             <sc-if value="{{ delStep1 }}" hint-placeholder-val="{{ true }}">
@@ -3722,12 +3703,12 @@
       <sc-if value="{{ inviteOpen }}">
       <div style="position: absolute; inset: 0; z-index: 700;">
         <div sc-camel-on-click="{{ closeInvite }}" style="position: absolute; inset: 0; background: rgba(14,16,20,0.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; inset: 0; top: 42px; overflow-y: auto; border-radius: 30px 30px 0 0; background: var(--paper, #F4F2ED); padding: 12px 0 34px; animation: sheetUp 0.6s cubic-bezier(0.16,1,0.3,1) both;">
+        <div style="position: absolute; inset: 0; top: 42px; overflow-y: auto; border-radius: 30px 30px 0 0; background: var(--paper, #F4F2ED); padding: 12px 0 34px; animation: sheetUp 0.6s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div sc-camel-on-click="{{ closeInvite }}" style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 16px; cursor: pointer;"></div>
 
           <div style="padding: 0 20px;">
             <div style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ inviteKicker }}</div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.035em; line-height: 1.08; margin-top: 8px; text-wrap: pretty;">{{ inviteTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.035em; line-height: 1.08; margin-top: 8px; text-wrap: pretty;">{{ inviteTitle }}</div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 9px; line-height: 1.5;">{{ inviteLead }}</div>
           </div>
 
@@ -3792,7 +3773,7 @@
       <sc-if value="{{ standOpen }}">
       <div style="position: absolute; inset: 0; z-index: 700;">
         <div sc-camel-on-click="{{ closeStand }}" style="position: absolute; inset: 0; background: rgba(14,16,20,0.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fadeIn 0.3s ease both;"></div>
-        <div sc-camel-on-pointer-down="{{ standSwipeStart }}" sc-camel-on-pointer-move="{{ standSwipeMove }}" sc-camel-on-pointer-up="{{ standSwipeEnd }}" sc-camel-on-pointer-cancel="{{ standSwipeEnd }}" style="transform: {{ standDragT }}; transition: {{ standDragEase }}; position: absolute; inset: 0; top: 42px; overflow-y: auto; border-radius: 30px 30px 0 0; background: var(--paper, #F4F2ED); padding: 12px 0 34px; animation: sheetUp 0.6s cubic-bezier(0.16,1,0.3,1) both;" data-noswipe="1">
+        <div sc-camel-on-pointer-down="{{ standSwipeStart }}" sc-camel-on-pointer-move="{{ standSwipeMove }}" sc-camel-on-pointer-up="{{ standSwipeEnd }}" sc-camel-on-pointer-cancel="{{ standSwipeEnd }}" style="transform: {{ standDragT }}; transition: {{ standDragEase }}; position: absolute; inset: 0; top: 42px; overflow-y: auto; border-radius: 30px 30px 0 0; background: var(--paper, #F4F2ED); padding: 12px 0 34px; animation: sheetUp 0.6s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" data-noswipe="1" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div sc-camel-on-click="{{ closeStand }}" style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 14px; cursor: pointer;"></div>
 
           <div style="padding: 0 20px;">
@@ -3809,7 +3790,7 @@
                 </div>
               </sc-if>
             </div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 32px; letter-spacing: -0.035em; line-height: 1.06; margin-top: 8px; text-wrap: pretty;">{{ standTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 32px; letter-spacing: -0.035em; line-height: 1.06; margin-top: 8px; text-wrap: pretty;">{{ standTitle }}</div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 9px; line-height: 1.55; text-wrap: pretty;">{{ standLead }}</div>
             <div style="display: flex; gap: 7px; margin-top: 18px;">
               <sc-for list="{{ standPills }}" as="p" hint-placeholder-count="2">
@@ -3921,9 +3902,9 @@
       <sc-if value="{{ couponOpen }}">
       <div style="position: absolute; inset: 0; z-index: 268;">
         <div sc-camel-on-click="{{ closeCoupon }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.45); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; max-height: 90%; overflow-y: auto; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 26px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both;" data-noswipe="1">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; max-height: 90%; overflow-y: auto; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 26px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" data-noswipe="1" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div sc-camel-on-click="{{ closeCoupon }}" style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 16px; cursor: pointer;"></div>
-          <div style="font-family: 'Instrument Serif', serif; font-size: 27px; letter-spacing: -0.03em;">{{ cTitle }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 27px; letter-spacing: -0.03em;">{{ cTitle }}</div>
           <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5;">{{ cNote }}</div>
 
           <div style="font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub, #6C6F75); margin-top: 20px;">{{ cNameLabel }}</div>
@@ -3977,10 +3958,10 @@
       <sc-if value="{{ langOpen }}">
       <div style="position: absolute; inset: 0; z-index: 264;">
         <div sc-camel-on-click="{{ closeLang }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.45); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 84%; display: flex; flex-direction: column; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both;" data-noswipe="1">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 84%; display: flex; flex-direction: column; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" data-noswipe="1" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div style="flex-shrink: 0; padding: 12px 20px 12px;">
             <div sc-camel-on-click="{{ closeLang }}" style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 16px; cursor: pointer;"></div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 26px; letter-spacing: -0.03em;">{{ langTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 26px; letter-spacing: -0.03em;">{{ langTitle }}</div>
             <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 7px; line-height: 1.5;">{{ langNote }}</div>
             <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 0 14px; height: 46px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1));">
               <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--sub, #6C6F75)" stroke-width="2" style="flex-shrink: 0;"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21" stroke-linecap="round"></path></svg>
@@ -4016,9 +3997,9 @@
       <sc-if value="{{ partnersOpen }}">
       <div style="position: absolute; inset: 0; z-index: 260;">
         <div sc-camel-on-click="{{ closePartners }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.45); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; max-height: 84%; overflow-y: auto; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 26px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both;" data-noswipe="1">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; max-height: 84%; overflow-y: auto; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 26px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" data-noswipe="1" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div sc-camel-on-click="{{ closePartners }}" style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 16px; cursor: pointer;"></div>
-          <div style="font-family: 'Instrument Serif', serif; font-size: 26px; letter-spacing: -0.03em;">{{ partPickTitle }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 26px; letter-spacing: -0.03em;">{{ partPickTitle }}</div>
           <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5;">{{ partPickNote }}</div>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
             <sc-for list="{{ partCandidates }}" as="c" hint-placeholder-count="3">
@@ -4048,9 +4029,9 @@
       <sc-if value="{{ redeemOpen }}">
       <div style="position: absolute; inset: 0; z-index: 300;">
         <div sc-camel-on-click="{{ closeRedeem }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.6); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: #14161A; color: #F4F2ED; border-radius: 30px 30px 0 0; padding: 12px 20px 28px; animation: sheetUp 0.58s cubic-bezier(0.16,1,0.3,1) both;" data-noswipe="1">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: #14161A; color: #F4F2ED; border-radius: 30px 30px 0 0; padding: 12px 20px 28px; animation: sheetUp 0.58s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" data-noswipe="1" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div sc-camel-on-click="{{ closeRedeem }}" style="width: 36px; height: 4px; border-radius: 4px; background: rgba(244,242,237,0.2); margin: 0 auto 16px; cursor: pointer;"></div>
-          <div style="font-family: 'Instrument Serif', serif; font-size: 26px; letter-spacing: -0.03em;">{{ redeemTitle }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 26px; letter-spacing: -0.03em;">{{ redeemTitle }}</div>
 
           <sc-if value="{{ rPick }}" hint-placeholder-val="{{ true }}">
           <div>
@@ -4106,7 +4087,7 @@
               <span style="position: absolute; inset: -9px; border-radius: 999px; border: 1.5px solid var(--accl, #57C39F); opacity: 0.5; animation: ringOut 2.2s cubic-bezier(0.16,1,0.3,1) infinite;"></span>
               <svg width="34" height="34" sc-camel-view-box="0 0 24 24" fill="none" stroke="#14161A" stroke-width="2.8"><path d="M4 12l5 5L20 6" stroke-linecap="round"></path></svg>
             </div>
-            <div style="text-align: center; font-family: 'Instrument Serif', serif; font-size: 27px; letter-spacing: -0.03em; margin-top: 17px;">{{ rOkTitle }}</div>
+            <div style="text-align: center; font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 27px; letter-spacing: -0.03em; margin-top: 17px;">{{ rOkTitle }}</div>
             <div style="margin-top: 14px; padding: 15px; border-radius: 19px; background: rgba(244,242,237,0.07);">
               <div style="font-size: 16px; font-weight: 600; letter-spacing: -0.02em;">{{ rOkReward }}</div>
               <div style="font-size: 12px; color: rgba(244,242,237,0.6); margin-top: 5px;">{{ rOkGuest }}</div>
@@ -4124,7 +4105,7 @@
             <div style="margin: 20px auto 0; width: 72px; height: 72px; border-radius: 999px; background: rgba(226,122,110,0.18); display: flex; align-items: center; justify-content: center; animation: popIn 0.6s cubic-bezier(0.16,1,0.3,1) both;">
               <svg width="30" height="30" sc-camel-view-box="0 0 24 24" fill="none" stroke="#E27A6E" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"></path></svg>
             </div>
-            <div style="text-align: center; font-family: 'Instrument Serif', serif; font-size: 25px; letter-spacing: -0.03em; margin-top: 16px;">{{ rBadTitle }}</div>
+            <div style="text-align: center; font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 25px; letter-spacing: -0.03em; margin-top: 16px;">{{ rBadTitle }}</div>
             <div style="font-size: 12px; color: rgba(244,242,237,0.6); margin-top: 10px; line-height: 1.5; text-align: center;">{{ rBadNote }}</div>
             <div sc-camel-on-click="{{ redeemAgain }}" style="margin-top: 18px; height: 52px; border-radius: 17px; cursor: pointer; background: var(--accl, #57C39F); color: #14161A; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 600;">{{ rAgain }}</div>
           </div>
@@ -4139,7 +4120,7 @@
         <div sc-camel-on-click="{{ closeNotif }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.4); animation: fadeIn 0.3s ease both;"></div>
         <div style="position: absolute; top: 0; left: 0; right: 0; background: var(--paper, #F4F2ED); border-radius: 0 0 22px 22px; padding: 56px 18px 18px; animation: sheetDown 0.5s cubic-bezier(0.16,1,0.3,1) both;">
           <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 2px 12px;">
-            <div style="font-family: 'Instrument Serif', serif; font-size: 24px; letter-spacing: -0.02em;">{{ t.notifications }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 24px; letter-spacing: -0.02em;">{{ t.notifications }}</div>
             <div sc-camel-on-click="{{ markRead }}" style="cursor: pointer; font-size: 11.5px; color: var(--acct, #1F5A46); font-weight: 500;">{{ t.markRead }}</div>
           </div>
           <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -4165,9 +4146,9 @@
       <sc-if value="{{ altOpen }}">
       <div style="position: absolute; inset: 0; z-index: 250;">
         <div sc-camel-on-click="{{ closeAlt }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.45); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 32px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both; box-shadow: 0 -30px 60px -40px rgba(22,24,28,0.9);">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 32px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both; box-shadow: 0 -30px 60px -40px rgba(22,24,28,0.9);; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 18px;"></div>
-          <div style="font-family: 'Instrument Serif', serif; font-size: 27px; letter-spacing: -0.03em; line-height: 1.1;">{{ altTitle }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 27px; letter-spacing: -0.03em; line-height: 1.1;">{{ altTitle }}</div>
           <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 7px; line-height: 1.5;">{{ altSub }}</div>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
             <sc-for list="{{ altMethods }}" as="m" hint-placeholder-count="4">
@@ -4198,7 +4179,7 @@
       <sc-if value="{{ plansOpen }}">
       <div style="position: absolute; inset: 0; z-index: 260;">
         <div sc-camel-on-click="{{ closePlans }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fadeIn 0.35s ease both;"></div>
-        <div style="position: absolute; top: 46px; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; background: var(--paper, #F4F2ED); border-radius: 32px 32px 0 0; overflow: hidden; animation: sheetUp 0.62s cubic-bezier(0.2,1.06,0.32,1) both; box-shadow: 0 -30px 70px -40px rgba(22,24,28,0.95);">
+        <div style="position: absolute; top: 46px; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; background: var(--paper, #F4F2ED); border-radius: 32px 32px 0 0; overflow: hidden; animation: sheetUp 0.62s cubic-bezier(0.2,1.06,0.32,1) both; box-shadow: 0 -30px 70px -40px rgba(22,24,28,0.95);; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div style="flex-shrink: 0; padding: 12px 20px 6px;">
             <div sc-camel-on-click="{{ closePlans }}" style="width: 40px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.16)); margin: 0 auto; cursor: pointer;"></div>
           </div>
@@ -4207,7 +4188,7 @@
               <span style="width: 5px; height: 5px; border-radius: 999px; background: #FBFAF7; animation: dot 1.4s ease-in-out infinite;"></span>
               <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em;">{{ trialBadge }}</span>
             </div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 33px; letter-spacing: -0.035em; margin-top: 13px; line-height: 1.05; text-wrap: pretty; animation: stagger 0.6s cubic-bezier(0.16,1,0.3,1) 0.14s both;">{{ plansTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 33px; letter-spacing: -0.035em; margin-top: 13px; line-height: 1.05; text-wrap: pretty; animation: stagger 0.6s cubic-bezier(0.16,1,0.3,1) 0.14s both;">{{ plansTitle }}</div>
             <div style="font-size: 13px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5; animation: stagger 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s both;">{{ plansSub }}</div>
 
             <div style="display: flex; gap: 4px; margin-top: 18px; padding: 4px; border-radius: 16px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); animation: stagger 0.6s cubic-bezier(0.16,1,0.3,1) 0.26s both;">
@@ -4284,9 +4265,9 @@
       <sc-if value="{{ helpOpen }}">
       <div style="position: absolute; inset: 0; z-index: 255;">
         <div sc-camel-on-click="{{ closeHelp }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.45); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 32px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both;">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 12px 20px 32px; animation: sheetUp 0.55s cubic-bezier(0.16,1,0.3,1) both;; transform: {{ sheetDragT }}; transition: {{ sheetDragEase }}" sc-camel-on-pointer-down="{{ sheetSwipeStart }}" sc-camel-on-pointer-move="{{ sheetSwipeMove }}" sc-camel-on-pointer-up="{{ sheetSwipeEnd }}" sc-camel-on-pointer-cancel="{{ sheetSwipeEnd }}">
           <div style="width: 36px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 18px;"></div>
-          <div style="font-family: 'Instrument Serif', serif; font-size: 27px; letter-spacing: -0.03em; line-height: 1.1;">{{ helpTitle }}</div>
+          <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 27px; letter-spacing: -0.03em; line-height: 1.1;">{{ helpTitle }}</div>
           <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
             <sc-for list="{{ helpSteps }}" as="h" hint-placeholder-count="3">
               <div style="display: flex; gap: 12px; animation: stagger 0.5s cubic-bezier(0.16,1,0.3,1) both; animation-delay: {{ h.delay }};">
@@ -4317,7 +4298,7 @@
                 <span style="height: 3px; border-radius: 3px; flex: {{ d.flex }}; background: {{ d.bg }}; transition: all 0.5s cubic-bezier(0.16,1,0.3,1);"></span>
               </sc-for>
             </div>
-            <div style="font-family: 'Instrument Serif', serif; font-size: 24px; letter-spacing: -0.025em; margin-top: 13px; line-height: 1.12;">{{ tourTitle }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 24px; letter-spacing: -0.025em; margin-top: 13px; line-height: 1.12;">{{ tourTitle }}</div>
             <div style="font-size: 13px; color: var(--sub, #6C6F75); margin-top: 7px; line-height: 1.55; text-wrap: pretty;">{{ tourBody }}</div>
             <div style="display: flex; align-items: center; gap: 9px; margin-top: 16px;">
               <div sc-camel-on-click="{{ tourSkip }}" style="flex: 1; height: 46px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12.5px; color: var(--sub, #6C6F75); border: 1px solid var(--hair, rgba(22,24,28,0.12));">{{ tourSkipLabel }}</div>
@@ -4333,7 +4314,7 @@
 
       <!-- ░░ TOAST ░░ -->
       <sc-if value="{{ hasToast }}">
-        <div style="position: absolute; top: 96px; left: 14px; right: 14px; z-index: 400; border-radius: 16px; overflow: hidden; background: var(--ink, #16181C); color: var(--paper, #F4F2ED); box-shadow: 0 20px 40px -20px rgba(22,24,28,0.7); animation: sheetDown 0.45s cubic-bezier(0.16,1,0.3,1) both;">
+        <div style="position: absolute; top: 16px; left: 14px; right: 14px; z-index: 1000; border-radius: 16px; overflow: hidden; background: var(--ink, #16181C); color: var(--paper, #F4F2ED); box-shadow: 0 20px 40px -20px rgba(22,24,28,0.7); animation: sheetDown 0.45s cubic-bezier(0.16,1,0.3,1) both;">
           <div style="display: flex; align-items: center; gap: 11px; padding: 13px 15px;">
             <div style="width: 24px; height: 24px; border-radius: 999px; flex-shrink: 0; background: var(--acc, #1F5A46); display: flex; align-items: center; justify-content: center;">
               <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FBFAF7" stroke-width="2.6"><path d="M4 12l5 5L20 6"></path></svg>
@@ -4505,7 +4486,7 @@
               <sc-if value="{{ peekIsScan }}"><svg width="21" height="21" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 8V5.5A1.5 1.5 0 015.5 4H8"></path><path d="M16 4h2.5A1.5 1.5 0 0120 5.5V8"></path><path d="M20 16v2.5A1.5 1.5 0 0118.5 20H16"></path><path d="M8 20H5.5A1.5 1.5 0 014 18.5V16"></path><path d="M4 12h16"></path></svg></sc-if>
               <sc-if value="{{ peekIsTrip }}"><svg width="21" height="21" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 18c0-2.6 3-2.6 3-5.2S5 10.2 5 7.6" stroke-linecap="round"></path><circle cx="5" cy="19.4" r="1.7"></circle><path d="M13.5 6.6h4.2a2.3 2.3 0 010 4.6H13a2.3 2.3 0 000 4.6h5" stroke-linecap="round"></path><circle cx="12.6" cy="5.4" r="1.5"></circle></svg></sc-if>
               <sc-if value="{{ peekIsProfile }}"><svg width="21" height="21" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.5" r="3.5"></circle><path d="M5 20c1.4-3.3 4-5 7-5s5.6 1.7 7 5" stroke-linecap="round"></path></svg></sc-if>
-              <span style="font-family: 'Instrument Serif', serif; font-size: 25px; letter-spacing: -0.025em; color: var(--ink, #16181C);">{{ peekLabel }}</span>
+              <span style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 25px; letter-spacing: -0.025em; color: var(--ink, #16181C);">{{ peekLabel }}</span>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
               <sc-for list="{{ peekRows }}" as="r" hint-placeholder-count="5">
