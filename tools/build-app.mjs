@@ -63,7 +63,13 @@ async function build() {
 
   let scripts = '';
   for (const file of await vendorFiles()) {
-    const code = await readFile(join(APP, 'vendor', file), 'utf8');
+    let code = await readFile(join(APP, 'vendor', file), 'utf8');
+    // HTML parser recognises <script and </script> inside a <script> block
+    // even when they're inside JS strings. Standard inline-script fix:
+    // replace the literal '<' before 'script' with the hex escape '\x3c'
+    // which is semantically identical in JavaScript but invisible to the
+    // HTML parser.
+    code = code.replace(/<(\/?)script/gi, '\\x3c$1script');
     scripts += `<script>\n${code}\n</script>\n`;
   }
 
@@ -77,16 +83,16 @@ async function build() {
 
   const doc = shell
     // Biblioteki wchodzą do środka zamiast odwołania do pliku.
-    .replace(/<script src="vendor\/dc-runtime\.js"><\/script>/, scripts.trim())
-    .replace('<!-- STYLES -->', `<style>\n${css}\n</style>`)
-    .replace('<!-- TEMPLATE -->', template)
+    .replace(/<script src="vendor\/dc-runtime\.js"><\/script>/, () => scripts.trim())
+    .replace('<!-- STYLES -->', () => `<style>\n${css}\n</style>`)
+    .replace('<!-- TEMPLATE -->', () => template)
     .replace(
       '<!-- LOGIC -->',
-      `<script type="text/x-dc" data-dc-script="" data-props="${attr}">\n${logic}\n</script>`,
+      () => `<script type="text/x-dc" data-dc-script="" data-props="${attr}">\n${logic}\n</script>`,
     );
 
   // Gdy w szkielecie nie było znacznika stylów, dokładamy je do nagłówka.
-  const withCss = doc.includes('<style>') ? doc : doc.replace('</head>', `<style>\n${css}\n</style>\n</head>`);
+  const withCss = doc.includes('<style>') ? doc : doc.replace('</head>', () => `<style>\n${css}\n</style>\n</head>`);
 
   await mkdir(dirname(OUT), { recursive: true });
   await writeFile(OUT, withCss, 'utf8');

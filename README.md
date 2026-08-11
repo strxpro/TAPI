@@ -6,6 +6,15 @@ Stan: **punkt 1 z „Kolejności wdrożenia" — fundament.**
 
 ---
 
+## 🤖 INSTRUKCJE DLA AI (AI GUIDELINES)
+**NIGDY NIE IGNORUJ TYCH ZASAD (CRITICAL):**
+1. **Zasada Białego Ekranu (Tag Balance):** Aplikacja opiera się na własnym silniku `dc-runtime` renderującym z pliku `src/app/template.html`. Silnik ten jest BARDZO czuły na niezamknięte tagi HTML (szczególnie `<div>` oraz `<sc-if>`). Jeśli zapomnisz zamknąć taga po usunięciu jakiegoś elementu, parser się wywala i aplikacja pokazuje "Biały ekran" (lub zatrzymuje się na ekranie Discover). Zawsze sprawdzaj, czy po usunięciu węzła HTML nie zostawiłeś osieroconych tagów zamykających lub otwierających!
+2. **Kompilacja (Build Step):** Zmiany w plikach `src/app/template.html`, `src/app/logic.js` oraz `src/app/index.html` **muszą** zostać skompilowane. Po jakiejkolwiek edycji użyj polecenia `node tools/build-app.mjs`, aby wygenerować `assets/app.html`. Bez tego WebView nie zobaczy Twoich zmian.
+3. **React Native vs Node Standard Library:** Pamiętaj, że środowisko React Native nie posiada bibliotek wbudowanych Node (np. `buffer`). Próba importowania paczek zależnych od `buffer` (np. niektórych modułów `react-native-svg` bez polyfilli) wysypie bundler Expo. Zawsze weryfikuj środowisko.
+4. **Mock-Data vs API:** Wszelkie mocki znajdują się w obiektach (np. `mock-data.js` czy na sztywno w `logic.js`). Zastępując mocki, buduj stabilne endpointy (np. przez Supabase).
+
+---
+
 ## Uruchomienie na iPhonie
 
 1. Zainstaluj **Expo Go** z App Store.

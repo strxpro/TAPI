@@ -262,9 +262,15 @@ class Component extends DCLogic {
 
   onDiscScroll(e) {
     const y = (e.target && e.target.scrollTop) || 0;
-    const c = y > 46;
-    if (!!this.state.dScroll !== c) this.setState({ dScroll: c });
-    if (!c && this.state.headSearch) this.setState({ headSearch: false });
+    const dy = y - (this.lastDScroll || 0);
+    this.lastDScroll = y;
+    if (y < 20) {
+      this.setState({ dScroll: false });
+    } else if (dy > 3) {
+      if (!this.state.dScroll) this.setState({ dScroll: true });
+    } else if (dy < -5) {
+      if (this.state.dScroll) this.setState({ dScroll: false });
+    }
   }
 
   quickLines() {
@@ -578,7 +584,10 @@ class Component extends DCLogic {
       this.setState({ navFly: [Math.min(a, b), Math.max(a, b)] });
       this.flyT = setTimeout(() => this.setState({ navFly: null }), 250);
     }
-    this.loadT = setTimeout(() => this.setState({ loading: false }), 420);
+    this.loadT = setTimeout(() => {
+      this.setState({ loading: false });
+      if (tab === 'scan') this.runScan();
+    }, 420);
   }
 
   goBiz(id, dir) {
@@ -1807,7 +1816,11 @@ class Component extends DCLogic {
 
       isSplash: st.phase === 'splash', isAuth: st.phase === 'auth',
       splashLabel: st.lang === 'pl' ? 'Przewodnik po lokalach i wydarzeniach' : 'Guide to venues and events',
-      loginGoogle: () => { this.setState({ mail: 'wait', mailStep: 'wait' }); clearTimeout(this.authT); this.authT = setTimeout(() => this.finishLogin('Klara Ziarno'), 1100); },
+      loginGoogle: () => { 
+        this.toast(st.lang === 'pl' ? 'Otwieram okno logowania Google...' : 'Opening Google Sign-In...');
+        this.setState({ mail: 'wait', mailStep: 'wait' }); clearTimeout(this.authT); 
+        this.authT = setTimeout(() => this.finishLogin('Klara Ziarno'), 1500); 
+      },
       loginEmail: () => this.setState({ mail: 'flow', mailStep: 'mail', code: '' }),
       skipLogin: () => { this.setState({ phase: 'app', tab: 'discover' }); this.toast(st.lang === 'pl' ? 'Przeglądasz jako gość. Zaloguj się, gdy zechcesz zbierać kupony.' : 'Browsing as a guest. Sign in whenever you want coupons.'); },
       gateOpen: !!st.gate,
@@ -1817,7 +1830,11 @@ class Component extends DCLogic {
       gateRegister: PL ? 'Załóż konto e-mailem' : 'Sign up with e-mail',
       gateHave: PL ? 'Mam już konto — zaloguj mnie' : 'I already have an account',
       gateLater: PL ? 'Może później' : 'Maybe later',
-      gateGoogle: () => { this.setState({ gate: false, mail: 'wait', mailStep: 'wait' }); clearTimeout(this.authT); this.authT = setTimeout(() => this.finishLogin('Klara Ziarno'), 1100); },
+      gateGoogle: () => { 
+        this.toast(st.lang === 'pl' ? 'Otwieram okno logowania Google...' : 'Opening Google Sign-In...');
+        this.setState({ gate: false, mail: 'wait', mailStep: 'wait' }); clearTimeout(this.authT); 
+        this.authT = setTimeout(() => this.finishLogin('Klara Ziarno'), 1500); 
+      },
       gateToRegister: () => this.setState({ gate: false, mail: 'flow', authMode: 'register', mailStep: 'mail', code: '' }),
       gateToLogin: () => this.setState({ gate: false, mail: 'flow', authMode: 'login', mailStep: 'mail', code: '' }),
       gatePerks: [
@@ -1828,9 +1845,11 @@ class Component extends DCLogic {
       mailTitle: st.authMode === 'login'
         ? this.l3('Zaloguj się e-mailem', 'Sign in with e-mail', 'Accedi con e-mail')
         : this.l3('Podaj adres e-mail', 'Enter your e-mail', 'Inserisci la tua e-mail'),
-      mailOpen: !!st.mail, mailStep1: st.mailStep === 'mail', mailStep2: st.mailStep === 'code', mailWait: st.mailStep === 'wait',
+      mailOpen: !!st.mail, mailStep1: st.mailStep === 'mail', mailStep2: st.mailStep === 'code', 
+      mailStep3: st.mailStep === 'name', mailStep4: st.mailStep === 'avatar',
+      mailWait: st.mailStep === 'wait',
       closeMail: () => this.setState({ mail: null, mailStep: 'mail', code: '', pending: null }),
-      emailRef: this.emailRef,
+      emailRef: this.emailRef, codeRef: this.codeRef, regNameRef: this.regNameRef, regUserRef: this.regUserRef,
       sendCode: () => { const m = (this.emailRef.current && this.emailRef.current.value) || 'ty@tapi.app';
         this.setState({ mailAddr: m, mailStep: 'code', code: '' });
         if (window.TAPI && window.TAPI.native) {
@@ -2938,6 +2957,24 @@ class Component extends DCLogic {
       anonBizQ: this.l3('Masz lokal?', 'Own a venue?', 'Hai un locale?'),
       anonBiz: this.l3('Zaloguj się jako firma', 'Sign in as a business', 'Accedi come azienda'),
       orLabel: this.l3('albo', 'or', 'oppure'),
+      toRegister: () => this.setState({ mailStep: 'name' }),
+      toAvatarStep: () => this.setState({ mailStep: 'avatar' }),
+      finishRegister: () => {
+        const n = (this.regNameRef && this.regNameRef.current && this.regNameRef.current.value) || 'Nowy Użytkownik';
+        this.setState({ mailStep: 'wait' });
+        setTimeout(() => this.finishLogin(n), 1000);
+      },
+      pickAvatar: () => {
+        this.buzz(10);
+        this.toast(this.l3('Wybieranie zdjęcia z galerii...', 'Picking from gallery...', 'Scelta dalla galleria...'));
+      },
+      onCodeInput: (e) => {
+        const v = e.target.value;
+        this.setState({ code: v });
+        if (v.length === 4) {
+          this.verify();
+        }
+      },
       bizFromLogin: () => this.setState({ mail: null, gate: false, mailStep: 'mail', code: '',
         phase: 'biz', biz: 'flow', bizStep: 0, bizManual: false, bizVerify: 'idle' }),
       delEntry: this.l3('Usuń konto', 'Delete account', 'Elimina account'),

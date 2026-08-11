@@ -182,13 +182,13 @@
       <sc-if value="{{ mailOpen }}">
       <div style="position: absolute; inset: 0; z-index: 220;">
         <div sc-camel-on-click="{{ closeMail }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.4); animation: fadeIn 0.3s ease both;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--paper, #F4F2ED); border-radius: 22px 22px 0 0; padding: 12px 24px 34px; animation: sheetUp 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-          <div style="width: 34px; height: 4px; border-radius: 4px; background: var(--hair, rgba(22,24,28,0.14)); margin: 0 auto 20px;"></div>
+        <div style="position: absolute; top: 15%; bottom: auto; left: 14px; right: 14px; background: var(--paper, #F4F2ED); border-radius: 24px; padding: 24px 24px 34px; animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);">
           <sc-if value="{{ mailStep1 }}">
             <div style="animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ t.step1 }}</div>
               <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px; line-height: 1.08;">{{ mailTitle }}</div>
-              <input type="email" ref="{{ emailRef }}" placeholder="imie@mail.com" style="width: 100%; margin-top: 16px; padding: 15px 16px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 14.5px; color: var(--ink, #16181C);">
+              <input type="email" ref="{{ emailRef }}" placeholder="imie@mail.com" style="width: 100%; margin-top: 16px; padding: 15px 16px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
+              <input type="password" ref="{{ passRef }}" placeholder="Hasło" style="width: 100%; margin-top: 10px; padding: 15px 16px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
               <div sc-camel-on-click="{{ sendCode }}" style="margin-top: 9px; height: 52px; border-radius: 13px; cursor: pointer; background: var(--acc, #1F5A46); color: var(--onacc, #FBFAF7); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;">{{ t.sendCode }}</div>
               <div style="display: flex; align-items: center; gap: 12px; margin-top: 16px;">
                 <span style="flex: 1; height: 1px; background: var(--hair, rgba(22,24,28,0.12));"></span>
@@ -200,9 +200,15 @@
                 <span style="flex: 1;">{{ t.google }}</span>
                 <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--sub, #6C6F75)" stroke-width="2"><path d="M9 5l7 7-7 7"></path></svg>
               </div>
-              <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--hair, rgba(22,24,28,0.1)); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12.5px; color: var(--sub, #6C6F75);">
-                <span>{{ anonBizQ }}</span>
-                <span sc-camel-on-click="{{ bizFromLogin }}" style="cursor: pointer; font-weight: 600; color: var(--acct, #1F5A46); border-bottom: 1px solid var(--acct, #1F5A46); padding-bottom: 1px;">{{ anonBiz }}</span>
+              <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--hair, rgba(22,24,28,0.1)); display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 12.5px; color: var(--sub, #6C6F75);">
+                <div>
+                  <span>Nie masz konta?</span>
+                  <span sc-camel-on-click="{{ toRegister }}" style="cursor: pointer; font-weight: 600; color: var(--acct, #1F5A46); border-bottom: 1px solid var(--acct, #1F5A46); padding-bottom: 1px; margin-left: 6px;">Zarejestruj się</span>
+                </div>
+                <div>
+                  <span>{{ anonBizQ }}</span>
+                  <span sc-camel-on-click="{{ bizFromLogin }}" style="cursor: pointer; font-weight: 600; color: var(--acct, #1F5A46); border-bottom: 1px solid var(--acct, #1F5A46); padding-bottom: 1px; margin-left: 6px;">{{ anonBiz }}</span>
+                </div>
               </div>
             </div>
           </sc-if>
@@ -210,17 +216,33 @@
             <div style="animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ t.step2 }}</div>
               <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px;">{{ t.codeTitle }}</div>
-              <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 7px;">{{ codeHint }}</div>
-              <div style="display: flex; gap: 9px; margin-top: 16px;">
-                <sc-for list="{{ codeCells }}" as="c" hint-placeholder-count="4">
-                  <div style="flex: 1; height: 58px; border-radius: 14px; background: var(--surf, #FFF); border: 1px solid {{ c.border }}; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 500;">{{ c.ch }}</div>
-                </sc-for>
+              <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 7px;">Wpisz 4-cyfrowy kod, który wysłaliśmy na e-mail.</div>
+              <div style="margin-top: 20px;">
+                <input type="text" pattern="[0-9]*" inputmode="numeric" autocomplete="one-time-code" maxlength="4" ref="{{ codeRef }}" sc-camel-on-input="{{ onCodeInput }}" placeholder="0000" style="width: 100%; text-align: center; letter-spacing: 0.5em; padding: 18px; border-radius: 16px; background: var(--surf, #FFF); border: 2px solid var(--hair, rgba(22,24,28,0.12)); outline: none; font-size: 28px; font-weight: 600; color: var(--ink, #16181C); transition: border-color 0.2s;">
               </div>
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px;">
-                <sc-for list="{{ keypad }}" as="k" hint-placeholder-count="12">
-                  <div sc-camel-on-click="{{ k.tap }}" style="height: 46px; border-radius: 12px; cursor: pointer; background: {{ k.bg }}; color: {{ k.fg }}; border: 1px solid var(--hair, rgba(22,24,28,0.1)); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 500; transition: transform 0.2s ease;" style-active="transform: scale(0.95);">{{ k.label }}</div>
-                </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ mailStep3 }}">
+            <div style="animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;">
+              <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub, #6C6F75);">Krok 1 z 2</div>
+              <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px; line-height: 1.08;">Opowiedz o sobie</div>
+              <input type="text" ref="{{ regNameRef }}" placeholder="Imię i nazwisko" style="width: 100%; margin-top: 16px; padding: 15px 16px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
+              <input type="text" ref="{{ regUserRef }}" placeholder="Nazwa użytkownika (np. janek99)" style="width: 100%; margin-top: 10px; padding: 15px 16px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
+              <div sc-camel-on-click="{{ toAvatarStep }}" style="margin-top: 16px; height: 52px; border-radius: 13px; cursor: pointer; background: var(--acc, #1F5A46); color: var(--onacc, #FBFAF7); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;">Dalej</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ mailStep4 }}">
+            <div style="animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;">
+              <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sub, #6C6F75);">Krok 2 z 2</div>
+              <div style="font-family: 'Instrument Serif', serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px; line-height: 1.08;">Dodaj zdjęcie profilowe</div>
+              <div style="display: flex; justify-content: center; margin-top: 24px; margin-bottom: 10px;">
+                <div sc-camel-on-click="{{ pickAvatar }}" style="width: 100px; height: 100px; border-radius: 999px; background: var(--surf, #FFF); border: 2px dashed var(--acct, #1F5A46); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--acct, #1F5A46); transition: transform 0.2s;" style-active="transform: scale(0.95);">
+                  <svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  <div style="font-size: 11px; font-weight: 600; margin-top: 6px;">Wgraj</div>
+                </div>
               </div>
+              <div sc-camel-on-click="{{ finishRegister }}" style="margin-top: 16px; height: 52px; border-radius: 13px; cursor: pointer; background: var(--acc, #1F5A46); color: var(--onacc, #FBFAF7); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;">Załóż konto</div>
+              <div sc-camel-on-click="{{ finishRegister }}" style="margin-top: 10px; text-align: center; font-size: 12.5px; color: var(--sub, #6C6F75); cursor: pointer; padding: 6px;">Pomiń na razie</div>
             </div>
           </sc-if>
           <sc-if value="{{ mailWait }}">
@@ -242,31 +264,14 @@
             <div style="font-family: 'Instrument Serif', serif; font-size: 34px; letter-spacing: -0.03em; line-height: 1.05; margin-top: 8px;">{{ greeting }}</div>
           </div>
           
-          <!-- AI PLANNER BANNER -->
-          <div sc-camel-on-click="{{ openTripPlanner }}" style="margin-top: 20px; position: relative; overflow: hidden; padding: 18px 20px; border-radius: 22px; background: linear-gradient(135deg, var(--paper, #F4F2ED) 0%, rgba(87,195,159,0.18) 100%); border: 1.5px solid var(--acct, #1F5A46); cursor: pointer; box-shadow: 0 16px 36px -16px rgba(31,90,70,0.3); animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;" style-active="transform: scale(0.97);">
-            <div style="position: absolute; right: -20px; bottom: -30px; opacity: 0.15; transform: rotate(-15deg); pointer-events: none;">
-              <svg width="120" height="120" sc-camel-view-box="0 0 24 24" fill="var(--acct, #1F5A46)"><path d="M12 2L2 22l10-3 10 3L12 2z"></path></svg>
-            </div>
-            <div style="position: relative; z-index: 2;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="padding: 4px 8px; border-radius: 6px; background: var(--acc, #1F5A46); color: #FFF; font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;">AI Planner</div>
-                <span style="font-size: 11px; font-weight: 700; color: var(--acct, #1F5A46); text-transform: uppercase; letter-spacing: 0.1em;">Twój idealny dzień</span>
-              </div>
-              <div style="font-family: 'Instrument Serif', serif; font-size: 32px; color: var(--ink, #16181C); margin-top: 8px; line-height: 1.1; letter-spacing: -0.02em;">Zaplanuj swój dzień w mieście</div>
-              <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 6px; line-height: 1.45; max-width: 85%;">Odpowiedz na 4 pytania i odbierz gotową trasę na wyjście solo lub z ekipą.</div>
-              <div style="display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 13px; font-weight: 700; color: var(--acct, #1F5A46);">
-                <span>Rozpocznij planowanie</span>
-                <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h13"></path><path d="M12 5l7 7-7 7"></path></svg>
-              </div>
-            </div>
-          </div>
+          <!-- AI Planner moved below -->
         </div>
 
         <div style="padding: 12px 20px 0;">
           <div style="display: flex; align-items: center; gap: 8px;">
             <div style="flex: 1; min-width: 0; height: 48px; border-radius: 13px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); display: flex; align-items: center; gap: 10px; padding: 0 14px;">
               <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--sub, #6C6F75)" stroke-width="2" style="flex-shrink: 0;"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.8-3.8"></path></svg>
-              <input type="text" ref="{{ searchRef }}" sc-camel-on-input="{{ onQuery }}" placeholder="{{ t.searchPh }}" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 14px; color: var(--ink, #16181C);">
+              <input type="text" ref="{{ searchRef }}" sc-camel-on-input="{{ onQuery }}" placeholder="{{ t.searchPh }}" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 16px; color: var(--ink, #16181C);">
               <sc-if value="{{ hasQuery }}">
                 <div sc-camel-on-click="{{ clearQuery }}" style="cursor: pointer; width: 20px; height: 20px; border-radius: 999px; background: var(--soft, rgba(31,90,70,0.1)); display: flex; align-items: center; justify-content: center;">
                   <svg width="10" height="10" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="3"><path d="M6 6l12 12M18 6L6 18"></path></svg>
@@ -279,6 +284,7 @@
                 <span style="position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px; background: var(--acc, #1F5A46); color: #FBFAF7; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--paper, #F4F2ED); animation: popIn 0.4s cubic-bezier(0.16,1,0.3,1) both;">{{ filterCount }}</span>
               </sc-if>
             </div>
+          </div>
           </div>
           <sc-if value="{{ sugOn }}">
             <div style="margin-top: 9px; border-radius: 16px; overflow: hidden; background: var(--surf, #FFF); border: 1px solid var(--acc, #1F5A46); box-shadow: 0 18px 34px -30px rgba(22,24,28,0.9); animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both;">
@@ -299,34 +305,14 @@
               </sc-for>
             </div>
           </sc-if>
-          <div sc-camel-on-click="{{ openInterests }}" style="display: flex; align-items: center; gap: 10px; margin-top: 9px; padding: 12px 14px; border-radius: 15px; cursor: pointer; background: var(--soft, rgba(31,90,70,0.09)); border: 1px solid {{ intBtnBorder }}; transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);" style-hover="transform: translateY(-2px);">
-            <div style="width: 26px; height: 26px; border-radius: 9px; flex-shrink: 0; background: var(--acc, #1F5A46); display: flex; align-items: center; justify-content: center;">
-              <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FBFAF7" stroke-width="1.9" style="animation: floaty 3.6s ease-in-out infinite;"><path d="M12 3.4l1.9 5 5.1 1.9-5.1 1.9-1.9 5-1.9-5L5 10.3l5.1-1.9z" stroke-linejoin="round"></path></svg>
-            </div>
-            <div style="flex: 1; min-width: 0;">
-              <div style="font-size: 12.5px; font-weight: 600; color: var(--acct, #1F5A46); letter-spacing: -0.01em;">{{ intBtnLabel }}</div>
-              <div style="font-size: 10.5px; color: var(--sub, #6C6F75); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ intBtnSub }}</div>
-            </div>
-            <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.4" style="flex-shrink: 0;"><path d="M9 5l7 7-7 7"></path></svg>
-          </div>
-          <div sc-camel-on-click="{{ openSort }}" style="display: flex; align-items: center; gap: 10px; margin-top: 9px; padding: 12px 14px; border-radius: 15px; cursor: pointer; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);" style-hover="transform: translateY(-2px);" style-active="transform: scale(0.98);">
-            <div style="width: 26px; height: 26px; border-radius: 9px; flex-shrink: 0; background: var(--soft, rgba(31,90,70,0.1)); display: flex; align-items: center; justify-content: center;">
-              <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2"><path d="M4 7h16M7 12h10M10 17h4" stroke-linecap="round"></path></svg>
-            </div>
-            <div style="flex: 1; min-width: 0;">
-              <div style="font-size: 12.5px; font-weight: 600; letter-spacing: -0.01em;">{{ filtRowLabel }}</div>
-              <div style="font-size: 10.5px; color: var(--sub, #6C6F75); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ filtRowSub }}</div>
-            </div>
-            <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--sub, #6C6F75)" stroke-width="2.4" style="flex-shrink: 0;"><path d="M9 5l7 7-7 7"></path></svg>
-          </div>
-        </div>
+
 
         <div style="position: sticky; top: 0; z-index: 30; margin-top: 16px; padding: 10px 20px 12px; background: var(--paper, #F4F2ED); box-shadow: 0 14px 18px -18px {{ headShade }}; transition: box-shadow 0.5s ease;">
           <div style="display: flex; align-items: center; padding-right: {{ headPadR }}; transition: padding 0.45s cubic-bezier(0.16,1,0.3,1);">
             <sc-if value="{{ headSearchOn }}">
               <div style="flex: 1; min-width: 0; height: 38px; border-radius: 12px; background: var(--surf, #FFF); border: 1px solid var(--acc, #1F5A46); display: flex; align-items: center; gap: 9px; padding: 0 11px; transform-origin: left center; animation: growX 0.44s cubic-bezier(0.16,1,0.3,1) both; box-shadow: 0 12px 26px -20px rgba(22,24,28,0.9);">
                 <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.1" style="flex-shrink: 0;"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.8-3.8" stroke-linecap="round"></path></svg>
-                <input type="text" ref="{{ headRef }}" sc-camel-on-input="{{ onQuery }}" placeholder="{{ t.searchPh }}" data-noswipe="1" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font: inherit; font-size: 13.5px; color: var(--ink, #16181C);">
+                <input type="text" ref="{{ headRef }}" sc-camel-on-input="{{ onQuery }}" placeholder="{{ t.searchPh }}" data-noswipe="1" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font: inherit; font-size: 16px; color: var(--ink, #16181C);">
                 <div sc-camel-on-click="{{ closeHeadSearch }}" style="width: 22px; height: 22px; flex-shrink: 0; border-radius: 999px; cursor: pointer; background: var(--soft, rgba(31,90,70,0.1)); display: flex; align-items: center; justify-content: center;" style-active="transform: scale(0.88);">
                   <svg width="10" height="10" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="3"><path d="M6 6l12 12M18 6L6 18"></path></svg>
                 </div>
@@ -491,7 +477,18 @@
             </div>
             </sc-if>
           </div>
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 28px; padding: 0 20px 12px;">
+          <!-- COMPACT AI PLANNER -->
+          <div sc-camel-on-click="{{ openTripPlanner }}" style="margin: 0 20px 20px; padding: 12px 16px; border-radius: 16px; background: linear-gradient(135deg, var(--paper, #F4F2ED) 0%, rgba(87,195,159,0.12) 100%); border: 1px solid var(--acct, #1F5A46); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s;" style-active="transform: scale(0.97);">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="padding: 2px 6px; border-radius: 4px; background: var(--acc, #1F5A46); color: #FFF; font-size: 8px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;">AI Planner</div>
+                <span style="font-size: 14.5px; font-family: 'Instrument Serif', serif; font-weight: 700; color: var(--ink, #16181C); letter-spacing: -0.01em;">Zaplanuj swój dzień</span>
+              </div>
+            </div>
+            <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.4"><path d="M5 12h13M12 5l7 7-7 7"></path></svg>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; padding: 0 20px 12px;">
             <div style="font-family: 'Instrument Serif', serif; font-size: 22px; letter-spacing: -0.02em;">{{ evHead }}</div>
             <div style="font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sub, #6C6F75); flex-shrink: 0;">{{ evCount }}</div>
           </div>
@@ -594,16 +591,10 @@
         <div style="position: absolute; top: 48px; left: 14px; right: 14px; z-index: 600;">
           <!-- Pasek górny mapy: Logo + Wyszukiwarka + Znajomi + Krzyżyk Zamknij -->
           <div style="display: flex; align-items: center; gap: 8px;">
-            <!-- Logo TAPI -->
-            <div sc-camel-on-click="{{ closeMapToDiscover }}" style="height: 44px; padding: 0 12px; border-radius: 14px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 12px 24px -16px rgba(22,24,28,0.7); display: flex; align-items: center; gap: 6px; cursor: pointer; flex-shrink: 0;" style-active="transform: scale(0.96);">
-              <div style="width: 22px; height: 22px; border-radius: 999px; background: var(--acc, #1F5A46); display: flex; align-items: center; justify-content: center; color: #FFF; font-size: 11px; font-weight: 800;">T</div>
-              <span style="font-family: 'Instrument Serif', serif; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink, #16181C);">TAPI</span>
-            </div>
-
-            <!-- Wyszukiwarka na mapie -->
+            <!-- Wyszukiwarka na mapie (poszerzona) -->
             <div style="flex: 1; min-width: 0; height: 44px; border-radius: 14px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 12px 24px -16px rgba(22,24,28,0.7); display: flex; align-items: center; gap: 8px; padding: 0 12px;">
               <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--sub, #6C6F75)" stroke-width="2" style="flex-shrink: 0;"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.8-3.8"></path></svg>
-              <input type="text" ref="{{ mapSearchRef }}" sc-camel-on-input="{{ onMapQuery }}" placeholder="{{ mapSearchPh }}" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 12.5px; color: var(--ink, #16181C);">
+              <input type="text" ref="{{ mapSearchRef }}" sc-camel-on-input="{{ onMapQuery }}" placeholder="{{ mapSearchPh }}" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 16px; color: var(--ink, #16181C);">
             </div>
 
             <!-- Przycisk Hub Znajomych -->
@@ -612,9 +603,8 @@
               <span style="font-size: 11px; font-weight: 700;">3</span>
             </div>
 
-            <!-- Krzyżyk [✕] Zamknij Mapę -->
-            <div sc-camel-on-click="{{ closeMapToDiscover }}" style="width: 44px; height: 44px; border-radius: 14px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 12px 24px -16px rgba(22,24,28,0.7); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: var(--ink, #16181C);" style-active="transform: scale(0.96);">
-              <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+            <!-- Awatar Użytkownika (po prawej) w kółku -->
+            <div sc-camel-on-click="{{ closeMapToDiscover }}" style="width: 44px; height: 44px; border-radius: 999px; background: url('https://i.pravatar.cc/150?img=68') center/cover; border: 2px solid var(--surf, #FFF); box-shadow: 0 12px 24px -16px rgba(22,24,28,0.7); cursor: pointer; flex-shrink: 0;" style-active="transform: scale(0.96);">
             </div>
           </div>
 
@@ -642,29 +632,21 @@
         </div>
 
         <sc-if value="{{ geoAsk }}">
-        <div style="position: absolute; left: 14px; right: 14px; top: 168px; z-index: 610;">
-          <div style="padding: 18px; border-radius: 24px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 26px 52px -26px rgba(22,24,28,0.8); animation: popIn 0.6s cubic-bezier(0.16,1,0.3,1) both;">
-            <div style="display: flex; align-items: flex-start; gap: 13px;">
-              <div style="width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0; background: var(--soft, rgba(31,90,70,0.1)); display: flex; align-items: center; justify-content: center; position: relative;">
-                <span style="position: absolute; width: 32px; height: 32px; border-radius: 999px; background: var(--acct, #1F5A46); opacity: 0.18; animation: ringOut 2.6s cubic-bezier(0.16,1,0.3,1) infinite;"></span>
-                <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="1.8" style="position: relative;"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>
+        <div style="position: absolute; left: 14px; right: 14px; top: 120px; z-index: 610;">
+          <div style="padding: 16px; border-radius: 20px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.25); animation: popIn 0.5s cubic-bezier(0.16,1,0.3,1) both;">
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; background: var(--soft, rgba(31,90,70,0.1)); display: flex; align-items: center; justify-content: center;">
+                <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
               <div style="flex: 1; min-width: 0;">
-                <div style="font-family: 'Instrument Serif', serif; font-size: 21px; letter-spacing: -0.025em; line-height: 1.14;">{{ geoAskTitle }}</div>
-                <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 6px; line-height: 1.5;">{{ geoAskBody }}</div>
+                <div style="font-family: 'Instrument Serif', serif; font-size: 19px; letter-spacing: -0.02em; line-height: 1.1;">Zezwól na położenie</div>
+                <div style="font-size: 11.5px; color: var(--sub, #6C6F75); margin-top: 4px; line-height: 1.4;">Zobaczymy, gdzie jesteś i ułożymy listę miejsc w okolicy.</div>
               </div>
             </div>
-            <div sc-camel-on-click="{{ allowGeo }}" style="margin-top: 14px; height: 50px; border-radius: 16px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 600;">{{ geoAllowLabel }}</div>
-            <div sc-camel-on-click="{{ togglePush }}" style="margin-top: 9px; padding: 12px 13px; border-radius: 16px; cursor: pointer; border: 1px solid var(--hair, rgba(22,24,28,0.12)); display: flex; align-items: center; gap: 11px;">
-              <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 12.5px; font-weight: 500;">{{ pushLabel }}</div>
-                <div style="font-size: 11px; color: var(--sub, #6C6F75); margin-top: 2px;">{{ pushSub }}</div>
-              </div>
-              <div style="width: 42px; height: 25px; border-radius: 999px; flex-shrink: 0; position: relative; background: {{ pushTrack }}; transition: background 0.4s ease;">
-                <div style="position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 999px; background: #FFF; box-shadow: 0 2px 5px rgba(22,24,28,0.25); transition: transform 0.4s cubic-bezier(0.16,1,0.3,1); transform: translateX({{ pushKnob }});"></div>
-              </div>
+            <div style="display: flex; gap: 10px; margin-top: 14px;">
+              <div sc-camel-on-click="{{ dismissGeo }}" style="flex: 1; height: 42px; border-radius: 12px; cursor: pointer; border: 1px solid var(--hair, rgba(22,24,28,0.15)); display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600; color: var(--sub, #6C6F75);">Później</div>
+              <div sc-camel-on-click="{{ allowGeo }}" style="flex: 1.5; height: 42px; border-radius: 12px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600;">Włącz</div>
             </div>
-            <div sc-camel-on-click="{{ dismissGeo }}" style="margin-top: 8px; text-align: center; font-size: 12px; color: var(--sub, #6C6F75); cursor: pointer; padding: 6px;">{{ geoLater }}</div>
           </div>
         </div>
         </sc-if>
@@ -672,19 +654,8 @@
         <div style="position: absolute; left: 0; right: 0; bottom: 98px; z-index: 600; padding: 0 14px;">
           <sc-if value="{{ mapClosed }}">
             <div style="display: flex; gap: 8px; animation: popIn 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-              <div sc-camel-on-click="{{ togglePush }}" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; padding: 12px 13px; border-radius: 18px; cursor: pointer; background: {{ pushPillBg }}; color: {{ pushPillFg }}; border: 1px solid {{ pushPillBorder }}; box-shadow: 0 18px 38px -26px rgba(22,24,28,0.8); transition: all 0.4s cubic-bezier(0.16,1,0.3,1);" style-active="transform: scale(0.97);">
-                <div style="position: relative; width: 26px; height: 26px; border-radius: 9px; flex-shrink: 0; background: {{ pushIconBg }}; display: flex; align-items: center; justify-content: center;">
-                  <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="{{ pushIconFg }}" stroke-width="1.9" style="animation: {{ pushBell }};"><path d="M18 15V10a6 6 0 10-12 0v5l-1.5 2.5h15z"></path><path d="M10 19a2 2 0 004 0"></path></svg>
-                </div>
-                <div style="flex: 1; min-width: 0;">
-                  <div style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ pushPillLabel }}</div>
-                  <div style="font-size: 10px; opacity: 0.7; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ pushPillSub }}</div>
-                </div>
-              </div>
-              <div sc-camel-on-click="{{ openSort }}" style="display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 12px 14px; border-radius: 18px; cursor: pointer; background: var(--surf, #FFF); border: 1px solid {{ filtBtnBorder }}; box-shadow: 0 18px 38px -26px rgba(22,24,28,0.8); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);" style-active="transform: scale(0.95);">
-                <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="{{ filtBtnFg }}" stroke-width="2.1"><path d="M4 7h16M7 12h10M10 17h4" stroke-linecap="round"></path></svg>
-                <span style="font-size: 12px; font-weight: 600; color: {{ filtBtnFg }};">{{ sortShort }}</span>
-              </div>
+              <div style="flex: 1;"></div>
+
               <div sc-camel-on-click="{{ openMapPanel }}" style="width: 46px; flex-shrink: 0; border-radius: 18px; cursor: pointer; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 18px 38px -26px rgba(22,24,28,0.8); display: flex; align-items: center; justify-content: center; transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);" style-active="transform: scale(0.95);">
                 <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--ink, #16181C)" stroke-width="2.2"><path d="M6 15l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
               </div>
@@ -746,14 +717,16 @@
         <div style="position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 5px);"></div>
         <div style="position: absolute; top: 54px; left: 0; right: 0; text-align: center; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(244,242,237,0.55);">{{ t.navScan }}</div>
 
-        <div style="position: absolute; top: 176px; left: 61px; width: 280px; height: 280px;">
+        <div style="position: absolute; top: 176px; left: 0; right: 0; margin: 0 auto; width: 280px; height: 280px;">
           <div style="position: absolute; inset: 0; border-radius: 28px; border: 1px solid rgba(244,242,237,0.14);"></div>
           <div style="position: absolute; left: 0; top: 0; width: 44px; height: 44px; border-top: 2px solid var(--accl, #57C39F); border-left: 2px solid var(--accl, #57C39F); border-radius: 28px 0 0 0;"></div>
           <div style="position: absolute; right: 0; top: 0; width: 44px; height: 44px; border-top: 2px solid var(--accl, #57C39F); border-right: 2px solid var(--accl, #57C39F); border-radius: 0 28px 0 0;"></div>
           <div style="position: absolute; left: 0; bottom: 0; width: 44px; height: 44px; border-bottom: 2px solid var(--accl, #57C39F); border-left: 2px solid var(--accl, #57C39F); border-radius: 0 0 0 28px;"></div>
           <div style="position: absolute; right: 0; bottom: 0; width: 44px; height: 44px; border-bottom: 2px solid var(--accl, #57C39F); border-right: 2px solid var(--accl, #57C39F); border-radius: 0 0 28px 0;"></div>
-          <div style="position: absolute; left: 10px; right: 10px; top: 8px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--accl, #57C39F) 12%, var(--accl, #57C39F) 88%, transparent); box-shadow: 0 0 22px 5px rgba(87,195,159,0.55); animation: scanline 2.4s cubic-bezier(0.45,0,0.25,1) infinite;"></div>
-          <div style="position: absolute; left: 10px; right: 10px; top: 8px; height: 78px; border-radius: 12px; background: linear-gradient(var(--accl, #57C39F), transparent); opacity: 0.12; transform-origin: top; animation: scanline 2.4s cubic-bezier(0.45,0,0.25,1) infinite;"></div>
+          <sc-if value="{{ scanStep }}">
+            <div style="position: absolute; left: 10px; right: 10px; top: 8px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--accl, #57C39F) 12%, var(--accl, #57C39F) 88%, transparent); box-shadow: 0 0 22px 5px rgba(87,195,159,0.55); animation: scanline 2.4s cubic-bezier(0.45,0,0.25,1) infinite;"></div>
+            <div style="position: absolute; left: 10px; right: 10px; top: 8px; height: 78px; border-radius: 12px; background: linear-gradient(var(--accl, #57C39F), transparent); opacity: 0.12; transform-origin: top; animation: scanline 2.4s cubic-bezier(0.45,0,0.25,1) infinite;"></div>
+          </sc-if>
           <div style="position: absolute; inset: 40px; opacity: 0.1; background-image: repeating-linear-gradient(0deg, #F4F2ED 0 12px, transparent 12px 24px), repeating-linear-gradient(90deg, #F4F2ED 0 12px, transparent 12px 24px);"></div>
         </div>
 
@@ -1493,7 +1466,7 @@
           <sc-if value="{{ colNew }}">
             <div style="padding: 14px 15px; border-radius: 18px; margin-bottom: 10px; background: var(--surf, #FFF); border: 1px solid var(--acc, #1F5A46); animation: pop 0.4s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ colNewLabel }}</div>
-              <input type="text" sc-camel-on-input="{{ onColDraft }}" placeholder="{{ colPh }}" data-noswipe="1" style="width: 100%; margin-top: 10px; padding: 12px 13px; border-radius: 13px; background: var(--paper, #F4F2ED); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font: inherit; font-size: 14px; color: var(--ink, #16181C);">
+              <input type="text" sc-camel-on-input="{{ onColDraft }}" placeholder="{{ colPh }}" data-noswipe="1" style="width: 100%; margin-top: 10px; padding: 12px 13px; border-radius: 13px; background: var(--paper, #F4F2ED); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font: inherit; font-size: 16px; color: var(--ink, #16181C);">
               <div style="display: flex; gap: 8px; margin-top: 10px;">
                 <div sc-camel-on-click="{{ colCancel }}" style="flex: 1; height: 44px; border-radius: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: var(--sub, #6C6F75); border: 1px solid var(--hair, rgba(22,24,28,0.1));">{{ colCancelLabel }}</div>
                 <div sc-camel-on-click="{{ colCreate }}" style="flex: 1.4; height: 44px; border-radius: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: var(--acc, #1F5A46); color: var(--onacc, #FBFAF7);" style-active="transform: scale(0.97);">{{ colCreateLabel }}</div>
@@ -1907,7 +1880,7 @@
           <sc-if value="{{ colNew }}">
             <div style="padding: 14px 15px; border-radius: 18px; margin-bottom: 10px; background: var(--surf, #FFF); border: 1px solid var(--acc, #1F5A46); animation: pop 0.4s cubic-bezier(0.16,1,0.3,1) both;">
               <div style="font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ colNewLabel }}</div>
-              <input type="text" sc-camel-on-input="{{ onColDraft }}" placeholder="{{ colPh }}" data-noswipe="1" style="width: 100%; margin-top: 10px; padding: 12px 13px; border-radius: 13px; background: var(--paper, #F4F2ED); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font: inherit; font-size: 14px; color: var(--ink, #16181C);">
+              <input type="text" sc-camel-on-input="{{ onColDraft }}" placeholder="{{ colPh }}" data-noswipe="1" style="width: 100%; margin-top: 10px; padding: 12px 13px; border-radius: 13px; background: var(--paper, #F4F2ED); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font: inherit; font-size: 16px; color: var(--ink, #16181C);">
               <div style="display: flex; gap: 8px; margin-top: 10px;">
                 <div sc-camel-on-click="{{ colCancel }}" style="flex: 1; height: 44px; border-radius: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: var(--sub, #6C6F75); border: 1px solid var(--hair, rgba(22,24,28,0.1));">{{ colCancelLabel }}</div>
                 <div sc-camel-on-click="{{ colCreate }}" style="flex: 1.4; height: 44px; border-radius: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: var(--acc, #1F5A46); color: var(--onacc, #FBFAF7);" style-active="transform: scale(0.97);">{{ colCreateLabel }}</div>
@@ -2033,7 +2006,7 @@
           <sc-for list="{{ meFields }}" as="f" hint-placeholder-count="5">
             <div style="display: flex; align-items: center; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--hair, rgba(22,24,28,0.07)); background: {{ f.rowBg }}; transition: background 0.4s ease;">
               <div style="width: 108px; flex-shrink: 0; font-size: 11.5px; color: var(--sub, #6C6F75);">{{ f.label }}</div>
-              <input type="text" value="{{ f.value }}" sc-camel-on-input="{{ f.onEdit }}" placeholder="{{ f.ph }}" sc-camel-read-only="{{ f.locked }}" data-noswipe="1" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 13.5px; font-weight: 500; color: var(--ink, #16181C); padding: 5px 0; cursor: {{ f.cursor }};">
+              <input type="text" value="{{ f.value }}" sc-camel-on-input="{{ f.onEdit }}" placeholder="{{ f.ph }}" sc-camel-read-only="{{ f.locked }}" data-noswipe="1" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 16px; font-weight: 500; color: var(--ink, #16181C); padding: 5px 0; cursor: {{ f.cursor }};">
               <sc-if value="{{ f.changed }}">
                 <span style="width: 7px; height: 7px; border-radius: 999px; flex-shrink: 0; background: var(--acc, #1F5A46); animation: popIn 0.4s cubic-bezier(0.16,1,0.3,1) both;"></span>
               </sc-if>
@@ -2457,11 +2430,11 @@
             <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 14px;">
               <div>
                 <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sub, #6C6F75); margin-bottom: 6px;">NIP lub E-mail lokalu</div>
-                <input type="text" value="6762589912" placeholder="np. 6762589912 lub kontakt@nokturn.wine" data-noswipe="1" style="width: 100%; height: 48px; border-radius: 13px; padding: 0 14px; background: var(--paper, #F4F2ED); border: 1px solid var(--hair, rgba(22,24,28,0.12)); font-size: 13.5px; color: var(--ink, #16181C); outline: none;">
+                <input type="text" value="6762589912" placeholder="np. 6762589912 lub kontakt@nokturn.wine" data-noswipe="1" style="width: 100%; height: 48px; border-radius: 13px; padding: 0 14px; background: var(--paper, #F4F2ED); border: 1px solid var(--hair, rgba(22,24,28,0.12)); font-size: 16px; color: var(--ink, #16181C); outline: none;">
               </div>
               <div>
                 <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sub, #6C6F75); margin-bottom: 6px;">Hasło</div>
-                <input type="password" value="secretpass" placeholder="••••••••••••" data-noswipe="1" style="width: 100%; height: 48px; border-radius: 13px; padding: 0 14px; background: var(--paper, #F4F2ED); border: 1px solid var(--hair, rgba(22,24,28,0.12)); font-size: 13.5px; color: var(--ink, #16181C); outline: none;">
+                <input type="password" value="secretpass" placeholder="••••••••••••" data-noswipe="1" style="width: 100%; height: 48px; border-radius: 13px; padding: 0 14px; background: var(--paper, #F4F2ED); border: 1px solid var(--hair, rgba(22,24,28,0.12)); font-size: 16px; color: var(--ink, #16181C); outline: none;">
               </div>
               <div sc-camel-on-click="{{ loginBizDirect }}" style="height: 50px; border-radius: 14px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; margin-top: 6px; box-shadow: 0 12px 24px -14px rgba(31,90,70,0.8);" style-active="transform: scale(0.97);">
                 <span>Zaloguj się do panelu lokalu</span>
@@ -2561,7 +2534,7 @@
               <div>
                 <div style="margin-top: 18px; height: 58px; border-radius: 18px; background: var(--surf, #FFF); border: 1px solid {{ gFieldBorder }}; display: flex; align-items: center; gap: 11px; padding: 0 16px; box-shadow: 0 12px 26px -24px rgba(22,24,28,0.9); transition: border-color 0.35s ease, box-shadow 0.35s ease;">
                   <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="{{ gIconStroke }}" stroke-width="2" style="flex-shrink: 0; transition: stroke 0.3s ease;"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.8-3.8"></path></svg>
-                  <input type="text" ref="{{ bizRef }}" sc-camel-on-input="{{ onBizQuery }}" placeholder="{{ regPh }}" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; font-weight: 500; letter-spacing: -0.01em; color: var(--ink, #16181C);">
+                  <input type="text" ref="{{ bizRef }}" sc-camel-on-input="{{ onBizQuery }}" placeholder="{{ regPh }}" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 16px; font-weight: 500; letter-spacing: -0.01em; color: var(--ink, #16181C);">
                   <sc-if value="{{ gTyped }}">
                     <div sc-camel-on-click="{{ clearBizQuery }}" style="width: 22px; height: 22px; border-radius: 999px; flex-shrink: 0; cursor: pointer; background: var(--soft, rgba(31,90,70,0.12)); display: flex; align-items: center; justify-content: center; animation: pop 0.3s cubic-bezier(0.16,1,0.3,1) both;">
                       <svg width="10" height="10" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="3.2"><path d="M6 6l12 12M18 6L6 18"></path></svg>
@@ -2629,7 +2602,7 @@
               <div style="animation: rise 0.45s cubic-bezier(0.16,1,0.3,1) both;">
                 <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 9px;">
                   <sc-for list="{{ manualFields }}" as="f" hint-placeholder-count="4">
-                    <input type="text" placeholder="{{ f.ph }}" style="width: 100%; padding: 15px 16px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 14px; color: var(--ink, #16181C);">
+                    <input type="text" placeholder="{{ f.ph }}" style="width: 100%; padding: 15px 16px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
                   </sc-for>
                 </div>
                 <div sc-camel-on-click="{{ manualDone }}" style="margin-top: 12px; height: 54px; border-radius: 17px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; font-size: 14.5px; font-weight: 600;">{{ nextLabel }}</div>
@@ -3361,7 +3334,7 @@
                     <sc-for list="{{ bizFields }}" as="b" hint-placeholder-count="5">
                       <div style="display: flex; align-items: center; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--hair, rgba(22,24,28,0.07));">
                         <div style="width: 96px; flex-shrink: 0; font-size: 11.5px; color: var(--sub, #6C6F75);">{{ b.label }}</div>
-                        <input type="text" value="{{ b.value }}" sc-camel-on-input="{{ b.onEdit }}" data-noswipe="1" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 13.5px; font-weight: 500; color: var(--ink, #16181C); padding: 5px 0;">
+                        <input type="text" value="{{ b.value }}" sc-camel-on-input="{{ b.onEdit }}" data-noswipe="1" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 16px; font-weight: 500; color: var(--ink, #16181C); padding: 5px 0;">
                       </div>
                     </sc-for>
                   </div>
@@ -3668,7 +3641,7 @@
             <sc-if value="{{ delStep2 }}">
               <div style="margin-top: 16px;">
                 <div style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ delTypeLabel }}</div>
-                <input type="text" ref="{{ delRef }}" sc-camel-on-input="{{ onDelType }}" placeholder="{{ delWord }}" style="width: 100%; box-sizing: border-box; margin-top: 9px; height: 50px; padding: 0 15px; border-radius: 15px; background: var(--paper, #F4F2ED); border: 1px solid {{ delBorder }}; outline: none; font-size: 15px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink, #16181C); transition: border-color 0.3s ease;">
+                <input type="text" ref="{{ delRef }}" sc-camel-on-input="{{ onDelType }}" placeholder="{{ delWord }}" style="width: 100%; box-sizing: border-box; margin-top: 9px; height: 50px; padding: 0 15px; border-radius: 15px; background: var(--paper, #F4F2ED); border: 1px solid {{ delBorder }}; outline: none; font-size: 16px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink, #16181C); transition: border-color 0.3s ease;">
               </div>
             </sc-if>
           </div>
@@ -3890,37 +3863,8 @@
           <sc-if value="{{ standStep1 }}">
           <div>
 
-          <div sc-camel-on-pointer-down="{{ standDragStart }}" sc-camel-on-pointer-move="{{ standDragMove }}" sc-camel-on-pointer-up="{{ standDragEnd }}" sc-camel-on-pointer-cancel="{{ standDragEnd }}" style="margin-top: 14px; height: 322px; perspective: 1100px; display: flex; flex-direction: column; align-items: center; justify-content: center; touch-action: none; cursor: grab; user-select: none; background: {{ standStageBg }};">
-            <div style="transform-style: preserve-3d; transform: rotateX(-7deg) rotateY({{ standRotDeg }}); transition: {{ standRotEase }};">
-              <div style="position: relative; transform-style: preserve-3d;">
-                <div style="position: absolute; inset: 0; border-radius: 20px; background: {{ standBackFace }}; transform: translateZ(-7px);"></div>
-                <div style="position: absolute; top: 0; bottom: 0; left: 0; width: 14px; border-radius: 20px 0 0 20px; background: {{ standEdge }}; transform: rotateY(-90deg) translateZ(7px); transform-origin: left center;"></div>
-                <div style="position: absolute; top: 0; bottom: 0; right: 0; width: 14px; border-radius: 0 20px 20px 0; background: {{ standEdge }}; transform: rotateY(90deg) translateZ(7px); transform-origin: right center;"></div>
-                <div style="position: relative; width: 176px; height: 232px; border-radius: 20px; overflow: hidden; transform: translateZ(7px); background: {{ standFace }}; border: 1px solid {{ standFaceBorder }}; box-shadow: {{ standShadow }};">
-                  <span style="position: absolute; top: 0; bottom: 0; width: 46%; background: linear-gradient(90deg, transparent, {{ standSheen }}, transparent); animation: sheen 5.4s ease-in-out infinite; pointer-events: none;"></span>
-                  <div style="position: absolute; top: 16px; left: 14px; right: 14px; text-align: center;">
-                    <div style="font-size: 7.5px; letter-spacing: 0.22em; text-transform: uppercase; color: {{ standInkSoft }};">{{ standScanHint }}</div>
-                    <div style="font-family: 'Instrument Serif', serif; font-size: 16px; line-height: 1.15; letter-spacing: -0.02em; margin-top: 5px; color: {{ standInk }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ standNameShown }}</div>
-                  </div>
-                  <div style="position: absolute; top: 76px; left: 50%; margin-left: -44px; width: 88px; height: 88px; border-radius: 999px; background: {{ standQrRing }}; display: flex; align-items: center; justify-content: center;">
-                    <span style="position: absolute; inset: -6px; border-radius: 999px; border: 1px solid {{ standQrPulse }}; animation: pingRing 2.9s cubic-bezier(0.16,1,0.3,1) infinite;"></span>
-                    <div style="width: 62px; height: 62px; border-radius: 10px; background: {{ standQrBg }}; display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr); padding: 5px; gap: 1px;">
-                      <sc-for list="{{ standQr }}" as="q" hint-placeholder-count="81">
-                        <div style="background: {{ q.bg }}; border-radius: 1px;"></div>
-                      </sc-for>
-                    </div>
-                  </div>
-                  <div style="position: absolute; top: 172px; left: 0; right: 0; text-align: center; font-size: 6.5px; letter-spacing: 0.3em; text-transform: uppercase; color: {{ standNfcFg }};">NFC</div>
-                  <div style="position: absolute; bottom: 18px; left: 0; right: 0; text-align: center;">
-                    <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.03em; color: {{ standInk }};">tapi</div>
-                    <div style="font-size: 6.5px; letter-spacing: 0.24em; text-transform: uppercase; color: {{ standInkSoft }}; margin-top: 3px;">smart stand</div>
-                  </div>
-                </div>
-              </div>
-              <div style="width: 196px; height: 14px; margin: -3px auto 0; border-radius: 4px 4px 7px 7px; background: {{ standBase }}; box-shadow: 0 14px 26px -16px rgba(0,0,0,0.75); transform: translateZ(0);"></div>
-            </div>
-            <div style="width: 150px; height: 14px; margin-top: 16px; border-radius: 999px; background: {{ standFloorShade }}; filter: blur(7px);"></div>
-            <div style="margin-top: 6px; font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub, #6C6F75);">{{ standDragHint }}</div>
+          <div style="margin-top: 14px; height: 322px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: {{ standStageBg }};">
+            <model-viewer src="stojak.glb" auto-rotate camera-controls shadow-intensity="1" exposure="0.8" environment-image="neutral" style="width: 100%; height: 100%; background-color: transparent; outline: none;"></model-viewer>
           </div>
 
           <div style="padding: 0 20px;">
@@ -3935,7 +3879,7 @@
             </div>
 
             <div style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sub, #6C6F75); margin-top: 18px;">{{ standNameHead }}</div>
-            <input type="text" value="{{ standName }}" sc-camel-on-input="{{ setStandName }}" placeholder="{{ standNamePh }}" data-noswipe="1" style="width: 100%; box-sizing: border-box; margin-top: 9px; padding: 0 15px; height: 50px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: var(--ink, #16181C); outline: none;">
+            <input type="text" value="{{ standName }}" sc-camel-on-input="{{ setStandName }}" placeholder="{{ standNamePh }}" data-noswipe="1" style="width: 100%; box-sizing: border-box; margin-top: 9px; padding: 0 15px; height: 50px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; color: var(--ink, #16181C); outline: none;">
             <div style="font-size: 10.5px; color: var(--sub, #6C6F75); margin-top: 7px;">{{ standNameNote }}</div>
 
             <div style="margin-top: 18px; padding: 16px 17px; border-radius: 20px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1));">
@@ -3983,7 +3927,7 @@
           <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5;">{{ cNote }}</div>
 
           <div style="font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub, #6C6F75); margin-top: 20px;">{{ cNameLabel }}</div>
-          <input type="text" value="{{ cName }}" sc-camel-on-input="{{ setCName }}" placeholder="{{ cNamePh }}" data-noswipe="1" style="width: 100%; margin-top: 9px; padding: 0 15px; height: 52px; border-radius: 16px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: var(--ink, #16181C);">
+          <input type="text" value="{{ cName }}" sc-camel-on-input="{{ setCName }}" placeholder="{{ cNamePh }}" data-noswipe="1" style="width: 100%; margin-top: 9px; padding: 0 15px; height: 52px; border-radius: 16px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; color: var(--ink, #16181C);">
           <div style="display: flex; gap: 6px; overflow-x: auto; margin-top: 9px; padding-bottom: 2px;">
             <sc-for list="{{ cQuick }}" as="q" hint-placeholder-count="4">
               <div sc-camel-on-click="{{ q.pick }}" style="flex-shrink: 0; cursor: pointer; padding: 8px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 500; white-space: nowrap; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); color: var(--sub, #6C6F75);" style-active="transform: scale(0.94);">{{ q.label }}</div>
@@ -4040,7 +3984,7 @@
             <div style="font-size: 12px; color: var(--sub, #6C6F75); margin-top: 7px; line-height: 1.5;">{{ langNote }}</div>
             <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 0 14px; height: 46px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1));">
               <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--sub, #6C6F75)" stroke-width="2" style="flex-shrink: 0;"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21" stroke-linecap="round"></path></svg>
-              <input type="text" value="{{ langQuery }}" sc-camel-on-input="{{ setLangQuery }}" placeholder="{{ langSearchPh }}" data-noswipe="1" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 13.5px; color: var(--ink, #16181C);">
+              <input type="text" value="{{ langQuery }}" sc-camel-on-input="{{ setLangQuery }}" placeholder="{{ langSearchPh }}" data-noswipe="1" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 16px; color: var(--ink, #16181C);">
             </div>
           </div>
           <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 20px 26px;">
@@ -4389,7 +4333,7 @@
 
       <!-- ░░ TOAST ░░ -->
       <sc-if value="{{ hasToast }}">
-        <div style="position: absolute; top: 52px; left: 14px; right: 14px; z-index: 400; border-radius: 16px; overflow: hidden; background: var(--ink, #16181C); color: var(--paper, #F4F2ED); box-shadow: 0 20px 40px -20px rgba(22,24,28,0.7); animation: sheetDown 0.45s cubic-bezier(0.16,1,0.3,1) both;">
+        <div style="position: absolute; top: 96px; left: 14px; right: 14px; z-index: 400; border-radius: 16px; overflow: hidden; background: var(--ink, #16181C); color: var(--paper, #F4F2ED); box-shadow: 0 20px 40px -20px rgba(22,24,28,0.7); animation: sheetDown 0.45s cubic-bezier(0.16,1,0.3,1) both;">
           <div style="display: flex; align-items: center; gap: 11px; padding: 13px 15px;">
             <div style="width: 24px; height: 24px; border-radius: 999px; flex-shrink: 0; background: var(--acc, #1F5A46); display: flex; align-items: center; justify-content: center;">
               <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FBFAF7" stroke-width="2.6"><path d="M4 12l5 5L20 6"></path></svg>
@@ -4621,3 +4565,4 @@
       </div>
     </div>
   </div>
+
