@@ -403,6 +403,24 @@ class Component extends DCLogic {
     }
   }
 
+  toastSwipeStart(e) {
+    this.tSw = { y: e.clientY, lock: null };
+  }
+  toastSwipeMove(e) {
+    const s = this.tSw; if (!s) return;
+    const dy = e.clientY - s.y;
+    if (!s.lock && dy < -8) s.lock = true;
+    if (s.lock) this.setState({ toastDragY: Math.min(0, dy) });
+  }
+  toastSwipeEnd() {
+    const s = this.tSw; this.tSw = null;
+    const d = this.state.toastDragY || 0;
+    this.setState({ toastDragY: 0 });
+    if (s && s.lock && d < -30) {
+      this.setState({ toast: '' });
+    }
+  }
+
   interestDefs = MOCK.interestDefs;
 
   tourDefs = [
@@ -1907,6 +1925,9 @@ class Component extends DCLogic {
       navPillT: st.navDragging ? 'scale(1.09)' : 'none',
       swipeStart: (e) => this.swipeStart(e), swipeMove: (e) => this.swipeMove(e), swipeEnd: (e) => this.swipeEnd(e),
       sheetSwipeStart: (e) => this.sheetSwipeStart(e), sheetSwipeMove: (e) => this.sheetSwipeMove(e), sheetSwipeEnd: (e) => this.sheetSwipeEnd(e),
+      toastSwipeStart: (e) => this.toastSwipeStart(e), toastSwipeMove: (e) => this.toastSwipeMove(e), toastSwipeEnd: (e) => this.toastSwipeEnd(e),
+      toastDragT: st.toastDragY ? 'translateY(' + st.toastDragY + 'px)' : 'none',
+      toastDragEase: st.toastDragY ? 'none' : 'transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease',
       sheetDragT: st.sheetDragY ? 'translateY(' + st.sheetDragY + 'px)' : 'none',
       sheetDragEase: st.sheetDragY ? 'none' : 'transform 0.42s cubic-bezier(0.16,1,0.3,1)',
       dragShift: dragPx ? 'translateX(' + dragPx + 'px) scale(' + (1 - Math.min(0.035, Math.abs(dragPx) / 2400)).toFixed(4) + ')' : 'none',
@@ -1946,6 +1967,7 @@ class Component extends DCLogic {
       pulled2: st.lang === 'pl' ? '18 zdjęć i 212 opinii' : '18 photos and 212 reviews',
       pulled3: st.lang === 'pl' ? 'Menu i pozycja na mapie' : 'Menu and map position',
       createLabel: st.lang === 'pl' ? 'Utwórz wizytówkę' : 'Create the card',
+      scanMenu: () => this.toast(st.lang === 'pl' ? 'Uruchamiam skaner menu z AI...' : 'Starting AI menu scanner...'),
       chartLabel: st.lang === 'pl' ? 'Skany · 7 dni' : 'Scans · 7 days',
       liveLabel: st.lang === 'pl' ? 'Na żywo' : 'Live',
       storyHeadline: [st.lang === 'pl' ? 'Kieliszek frizzante gratis' : 'Free glass of frizzante', st.lang === 'pl' ? 'Winylowy czwartek, 23:30' : 'Vinyl Thursday, 11:30 pm', st.lang === 'pl' ? 'Karta jesienna od dziś' : 'Autumn menu from today'][st.storyTpl],

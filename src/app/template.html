@@ -2656,8 +2656,30 @@
                 </div>
               </sc-for>
             </div>
-            <div sc-camel-on-click="{{ stepNext }}" style="margin-top: 14px; height: 56px; border-radius: 18px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 15px; font-weight: 600;">
-              <span>{{ toPlansLabel }}</span>
+
+            <!-- Nowa sekcja: Menu i Zdjęcia -->
+            <div style="margin-top: 20px;">
+              <div style="font-size: 13px; font-weight: 600; color: var(--ink, #16181C);">Zdjęcia i Menu z Google</div>
+              <div style="font-size: 11.5px; color: var(--sub, #6C6F75); margin-top: 3px;">Upewnij się, że Twoja oferta jest aktualna.</div>
+              
+              <div style="display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
+                <div style="width: 80px; height: 80px; border-radius: 12px; background: url('https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=150&q=80') center/cover; flex-shrink: 0; box-shadow: 0 4px 10px rgba(22,24,28,0.1);"></div>
+                <div style="width: 80px; height: 80px; border-radius: 12px; background: url('https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=150&q=80') center/cover; flex-shrink: 0; box-shadow: 0 4px 10px rgba(22,24,28,0.1);"></div>
+                <div style="width: 80px; height: 80px; border-radius: 12px; background: var(--surf, #FFF); border: 2px dashed var(--hair, rgba(22,24,28,0.2)); flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--sub, #6C6F75);">
+                  <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 16px;">
+                <div sc-camel-on-click="{{ scanMenu }}" style="flex: 1; height: 48px; border-radius: 14px; cursor: pointer; background: var(--surf, #FFF); border: 1.5px solid var(--acct, #1F5A46); color: var(--acct, #1F5A46); display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 13.5px; font-weight: 600;" style-active="transform: scale(0.97);">
+                  <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h4v4H4zM16 4h4v4h-4zM4 16h4v4H4zM12 12h4v4h-4z"></path></svg>
+                  <span>Zeskanuj menu</span>
+                </div>
+              </div>
+            </div>
+
+            <div sc-camel-on-click="{{ stepNext }}" style="margin-top: 16px; height: 56px; border-radius: 18px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 15px; font-weight: 600;" style-active="transform: scale(0.98);">
+              <span>{{ toPlansLabel }} / Zrobię to później</span>
               <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FBFAF7" stroke-width="2.4"><path d="M5 12h13"></path><path d="M13 6l6 6-6 6"></path></svg>
             </div>
           </div>
@@ -3845,7 +3867,7 @@
           <div>
 
           <div style="margin-top: 14px; height: 322px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: {{ standStageBg }};">
-            <model-viewer src="stojak.glb" auto-rotate camera-controls shadow-intensity="1" exposure="0.8" environment-image="neutral" style="width: 100%; height: 100%; background-color: transparent; outline: none;"></model-viewer>
+            <model-viewer src="stojak.glb?v=2" auto-rotate camera-controls shadow-intensity="1" exposure="0.8" environment-image="neutral" style="width: 100%; height: 100%; background-color: transparent; outline: none;"></model-viewer>
           </div>
 
           <div style="padding: 0 20px;">
@@ -4314,7 +4336,7 @@
 
       <!-- ░░ TOAST ░░ -->
       <sc-if value="{{ hasToast }}">
-        <div style="position: absolute; top: 16px; left: 14px; right: 14px; z-index: 1000; border-radius: 16px; overflow: hidden; background: var(--ink, #16181C); color: var(--paper, #F4F2ED); box-shadow: 0 20px 40px -20px rgba(22,24,28,0.7); animation: sheetDown 0.45s cubic-bezier(0.16,1,0.3,1) both;">
+        <div sc-camel-on-pointer-down="{{ toastSwipeStart }}" sc-camel-on-pointer-move="{{ toastSwipeMove }}" sc-camel-on-pointer-up="{{ toastSwipeEnd }}" sc-camel-on-pointer-cancel="{{ toastSwipeEnd }}" sc-camel-on-pointer-leave="{{ toastSwipeEnd }}" style="position: absolute; top: 16px; left: 14px; right: 14px; z-index: 1000; border-radius: 16px; overflow: hidden; background: var(--ink, #16181C); color: var(--paper, #F4F2ED); box-shadow: 0 20px 40px -20px rgba(22,24,28,0.7); transform: {{ toastDragT }}; transition: {{ toastDragEase }}; animation: sheetDown 0.45s cubic-bezier(0.16,1,0.3,1) both;">
           <div style="display: flex; align-items: center; gap: 11px; padding: 13px 15px;">
             <div style="width: 24px; height: 24px; border-radius: 999px; flex-shrink: 0; background: var(--acc, #1F5A46); display: flex; align-items: center; justify-content: center;">
               <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FBFAF7" stroke-width="2.6"><path d="M4 12l5 5L20 6"></path></svg>
