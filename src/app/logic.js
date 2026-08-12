@@ -1967,6 +1967,7 @@ class Component extends DCLogic {
       pulled2: st.lang === 'pl' ? '18 zdjęć i 212 opinii' : '18 photos and 212 reviews',
       pulled3: st.lang === 'pl' ? 'Menu i pozycja na mapie' : 'Menu and map position',
       createLabel: st.lang === 'pl' ? 'Utwórz wizytówkę' : 'Create the card',
+      openLivePreview: () => this.setState({ bizLivePreview: true, isVenue: true }),
       scanMenu: () => this.toast(st.lang === 'pl' ? 'Uruchamiam skaner menu z AI...' : 'Starting AI menu scanner...'),
       chartLabel: st.lang === 'pl' ? 'Skany · 7 dni' : 'Scans · 7 days',
       liveLabel: st.lang === 'pl' ? 'Na żywo' : 'Live',
@@ -2814,7 +2815,8 @@ class Component extends DCLogic {
       callVenue: () => this.toast(st.lang === 'pl' ? 'Dzwonię: ' + v.phone : 'Calling ' + v.phone),
       routeVenue: () => { this.go('map'); this.toast(st.lang === 'pl' ? 'Trasa do ' + v.name + ' · 4 min pieszo' : 'Route to ' + v.name + ' · 4 min walk'); },
       siteVenue: () => this.toast(v.site),
-      back: () => this.go('discover'),
+      bizLivePreview: st.bizLivePreview,
+      back: () => { if (st.bizLivePreview) { this.setState({ bizLivePreview: false, isVenue: false }); } else { this.go('discover'); } },
 
       couponActive: !!cv, noCoupon: !cv,
       couponName: cv ? cv.name : '', couponReward: cv ? this.dt(cv.reward) : '', couponCode: cv ? cv.code : '',
@@ -3023,7 +3025,9 @@ class Component extends DCLogic {
         }
       },
       bizFromLogin: () => this.setState({ mail: null, gate: false, mailStep: 'mail', code: '',
-        phase: 'biz', biz: 'flow', bizStep: 0, bizManual: false, bizVerify: 'idle' }),
+        phase: 'biz', biz: 'flow', bizStep: 0, bizManual: false, bizVerify: 'idle',
+      bizCategory: 'apartments',
+      bizLivePreview: false, bizCategory: 'apartments', bizLivePreview: false }),
       delEntry: this.l3('Usuń konto', 'Delete account', 'Elimina account'),
       logout: () => { this.buzz(10); this.setState({ user: null, coupon: null }); this.toast(st.lang === 'pl' ? 'Wylogowano.' : 'Signed out.'); },
       langOpts: [{ id: 'pl', label: 'Polski' }, { id: 'en', label: 'English' }, { id: 'it', label: 'Italiano' }].map((l) => ({
