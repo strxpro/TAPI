@@ -506,16 +506,27 @@ class Component extends DCLogic {
   }
 
   allowGeo() {
-    const spots = [[50.0483, 19.9448, 430], [50.0512, 19.9445, 250], [50.0455, 19.9535, 230]];
-    this.revealK = 0;
-    this.setState({ geoAllowed: true, explored: spots, geoDismissed: true, mapBurst: true, mapPanel: 'open' });
-    this.buzz(14);
-    setTimeout(() => { this.updateFog(); this.runReveal(); }, 60);
-    clearTimeout(this.burstT);
-    this.burstT = setTimeout(() => this.setState({ mapBurst: false }), 2000);
-    setTimeout(() => this.toast(this.l3('Odkryto 3 kwartały. Mapa nabrała koloru.',
-      'Three blocks uncovered. The map has colour now.',
-      'Tre quartieri svelati. La mappa ha preso colore.')), 1250);
+    const fallbackSpots = [[50.0483, 19.9448, 430], [50.0512, 19.9445, 250], [50.0455, 19.9535, 230]];
+    const proceed = (spots) => {
+      this.revealK = 0;
+      this.setState({ geoAllowed: true, explored: spots, geoDismissed: true, mapBurst: true, mapPanel: 'open' });
+      this.buzz(14);
+      setTimeout(() => { this.updateFog(); this.runReveal(); }, 60);
+      clearTimeout(this.burstT);
+      this.burstT = setTimeout(() => this.setState({ mapBurst: false }), 2000);
+      setTimeout(() => this.toast(this.l3('Odkryto teren z GPS. Mapa nabrała koloru.', 'GPS area uncovered. The map has colour now.', 'Area GPS svelata. La mappa ha preso colore.')), 1250);
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        proceed(fallbackSpots); // In reality we'd map lat/lon to map spots
+      }, (err) => {
+        this.toast('Błąd GPS: ' + err.message);
+        proceed(fallbackSpots);
+      });
+    } else {
+      proceed(fallbackSpots);
+    }
   }
 
   runReveal() {
@@ -595,8 +606,15 @@ class Component extends DCLogic {
     const acc = this.accents[this.state.accent].hex;
     this.markers = {};
     this.venues.forEach((v) => {
-      const icon = L.divIcon({ className: '', iconSize: [30, 30], iconAnchor: [15, 15],
-        html: '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:' + acc + ';color:#fff;border:2.5px solid #fff;box-shadow:0 4px 12px rgba(22,24,28,.3);font:600 11px Instrument Sans,sans-serif">' + v.rating.toFixed(1) + '</div>' });
+      const hasStory = (v.votes > 150 || v.id === 'ostra' || v.id === 'nokturn');
+      const grad = 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)';
+      const outerBg = hasStory ? grad : 'transparent';
+      const gapBg = hasStory ? '#FFF' : 'transparent';
+      const htmlStr = `<div style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;background:${outerBg};">` +
+                      `<div style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:${gapBg};">` +
+                      `<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:${acc};color:#fff;font:600 11px Instrument Sans,sans-serif;box-shadow:0 4px 12px rgba(22,24,28,.3);">${v.rating.toFixed(1)}</div>` +
+                      `</div></div>`;
+      const icon = L.divIcon({ className: '', iconSize: [38, 38], iconAnchor: [19, 19], html: htmlStr });
       const m = L.marker([v.lat, v.lng], { icon: icon }).addTo(this.map);
       m.on('click', (e) => { if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent); this.openPin(v.id); });
       this.markers[v.id] = m;
@@ -624,10 +642,31 @@ class Component extends DCLogic {
       this.setState({ navFly: [Math.min(a, b), Math.max(a, b)] });
       this.flyT = setTimeout(() => this.setState({ navFly: null }), 250);
     }
+    if (tab !== 'scan') this.stopCamera();
     this.loadT = setTimeout(() => {
       this.setState({ loading: false });
-      if (tab === 'scan') this.runScan();
+      if (tab === 'scan') this.startCamera();
     }, 420);
+  }
+
+  startCamera() {
+    if (this.videoStream) return;
+    const v = document.getElementById('qrVideo');
+    if (!v) return;
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          this.videoStream = stream;
+          v.srcObject = stream;
+        }).catch(err => console.log('Camera error:', err));
+    }
+  }
+
+  stopCamera() {
+    if (this.videoStream) {
+      this.videoStream.getTracks().forEach(t => t.stop());
+      this.videoStream = null;
+    }
   }
 
   goBiz(id, dir) {
@@ -819,6 +858,10 @@ class Component extends DCLogic {
       if (st.fOpen && !v.isOpen) return false;
       if (st.fPrice && v.price.length > st.fPrice) return false;
       if (st.fRating && v.rating < st.fRating) return false;
+      
+      if (st.discoverCat && st.discoverCat !== 'all' && v.cat !== st.discoverCat) return false;
+      if (st.discoverBookOnline && !(v.cat === 'rest' || v.cat === 'apt')) return false;
+      
       if (!q) return true;
       return (v.name + ' ' + v.catLabel + ' ' + v.district).toLowerCase().indexOf(q) > -1;
     });
@@ -828,6 +871,15 @@ class Component extends DCLogic {
     else if (s === 'rated') out = out.slice().sort((a, b) => b.rating - a.rating || b.votes - a.votes);
     else if (s === 'popular') out = out.slice().sort((a, b) => b.votes - a.votes);
     else if (s === 'near') out = out.slice().sort((a, b) => m(a) - m(b));
+    
+    out = out.slice().sort((a, b) => {
+      const aMine = st.myVenueId === a.id || (st.user && st.myVenueId == null && a.id === 'ostra');
+      const bMine = st.myVenueId === b.id || (st.user && st.myVenueId == null && b.id === 'ostra');
+      if (aMine && !bMine) return -1;
+      if (!aMine && bMine) return 1;
+      return 0;
+    });
+    
     return out;
   }
 
@@ -2694,6 +2746,17 @@ class Component extends DCLogic {
         { venue: 'nokturn', title: st.lang === 'pl' ? 'Dostawa z Friuli' : 'Delivery from Friuli', when: '19:00', place: 'Nokturn', tag: st.lang === 'pl' ? 'NOWE' : 'NEW', grad: 'linear-gradient(150deg, #EAD6DE, #A8788C 60%, #4E3040)', delay: '140ms' }
       ].map((c) => ({ title: c.title, when: c.when, place: c.place, tag: c.tag, grad: c.grad, delay: c.delay, open: () => this.openVenue(c.venue) })),
 
+      filterCats: [
+        { id: 'all', label: PL ? 'Wszystko' : 'All' }, { id: 'rest', label: PL ? 'Restauracje' : 'Restaurants' },
+        { id: 'apt', label: PL ? 'Apartamenty' : 'Apartments' }, { id: 'beauty', label: 'Beauty & Spa' }
+      ].map((c) => {
+        const on = (st.discoverCat || 'all') === c.id;
+        return { label: c.label, bg: on ? th.ink : th.surf, fg: on ? th.paper : th.sub, border: on ? th.ink : th.hair, toggle: () => this.setState({ discoverCat: c.id }) };
+      }),
+      bookOnlineBg: st.discoverBookOnline ? ac.hex : th.hair,
+      bookOnlineKnob: st.discoverBookOnline ? 'translateX(20px)' : 'translateX(0px)',
+      toggleBookOnline: () => this.setState({ discoverBookOnline: !st.discoverBookOnline }),
+
       evHead: PL ? 'Nadchodzące wydarzenia' : 'Upcoming events',
       evCount: evScope.length + (PL ? ' w kalendarzu' : ' scheduled'),
       evWhen: [
@@ -2731,13 +2794,17 @@ class Component extends DCLogic {
         ? (PL ? 'W ' + st.area + ' nic w tym terminie. Wybierz „Cały Kraków" albo inny dzień.' : 'Nothing in ' + st.area + ' then. Try “All Kraków” or another day.')
         : (PL ? 'W tym terminie nic nie zaplanowano. Zobacz „Wszystkie" — w tym tygodniu dzieje się więcej.' : 'Nothing scheduled then. Try “All” — there is more this week.'),
 
-      list: list.map((x, i) => ({
+      list: list.map((x, i) => {
+        const isMine = st.myVenueId === x.id || (st.user && st.myVenueId == null && x.id === 'ostra');
+        return {
         name: x.name, catLabel: this.dt(x.catLabel), district: x.district, dist: x.dist, grad: x.grad,
         rating: x.rating.toFixed(1), votes: '(' + x.votes + ')', price: x.price,
         statusLabel: x.isOpen ? t.open + ' · ' + t.until + ' ' + x.closes : t.closed,
-        statusFg: x.isOpen ? at : th.sub, delay: (i * 70) + 'ms',
+        statusFg: x.isOpen ? at : th.sub, delay: (i * 70) + 'ms', isMine: isMine,
         savedFill: st.savedIds.indexOf(x.id) > -1 ? ac.hex : 'none',
-        open: () => this.openVenue(x.id), save: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.needAuth(() => this.toggleSaved(x.id)); } })),
+        hasBooking: x.cat === 'rest' || x.cat === 'apt', bookLabel: PL ? 'Zarezerwuj online' : 'Book online',
+        open: () => this.openVenue(x.id), save: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.needAuth(() => this.toggleSaved(x.id)); } };
+      }),
       empty: list.length === 0,
       emptyText: st.lang === 'pl' ? 'Brak wyników. Zdejmij filtr albo napisz inaczej.' : 'No results. Clear the filter or try another word.',
 
@@ -2848,6 +2915,15 @@ class Component extends DCLogic {
       scanBusy: st.scan === 'busy', scanIdle: st.scan === 'idle',
       scanLabel: [st.lang === 'pl' ? 'CZYTAM KOD' : 'READING CODE', st.lang === 'pl' ? 'ŁĄCZĘ Z LOKALEM' : 'CONNECTING', st.lang === 'pl' ? 'PRZYPISUJĘ KUPON' : 'ASSIGNING COUPON'][st.scanStep || 0],
       doScan: () => this.runScan(),
+      manualQR: !!st.manualQR,
+      openManualQR: () => this.setState({ manualQR: true }),
+      closeManualQR: () => this.setState({ manualQR: false }),
+      handleManualQR: (e) => {
+        if (e.target.value.length >= 4) {
+          this.setState({ manualQR: false });
+          this.runScan();
+        }
+      },
 
       /* ══ JĘZYK ══ */
       langOpen: !!st.langOpen,
@@ -3058,11 +3134,7 @@ bizEditMode: false,
         pick: () => { this.setState({ accent: k }); if (this.map) { this.map.remove(); this.map = null; } } })),
       isBiz: st.phase === 'biz',
       bizLanding: st.biz === 'landing', bizPlans: st.biz === 'plans', bizRegister: st.biz === 'register', bizPanel: st.biz === 'panel',
-      bizBack: () => {
-        if (st.biz === 'plans') this.setState({ biz: 'landing' });
-        else if (st.biz === 'register') this.setState({ biz: 'plans' });
-        else this.setState({ phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' });
-      },
+
       bizToPlans: () => this.setState({ biz: 'plans' }),
       benefits: [
         { title: st.lang === 'pl' ? 'Zauważalność' : 'Visibility', body: st.lang === 'pl' ? 'Twoje wydarzenia na mapie miasta i w kanale „Dziś w mieście”.' : 'Your events on the city map and in the Today feed.', isChart: true, delay: '0ms' },
@@ -3113,7 +3185,14 @@ bizEditMode: false,
       ].map((g, i) => ({ name: g.name, addr: g.addr, rating: g.rating, delay: (i * 60) + 'ms',
         pick: () => { this.setState({ bizPicked: g.name }); this.toast(st.lang === 'pl' ? 'Zaciągnęliśmy dane z Google: godziny, telefon, zdjęcia.' : 'Pulled from Google: hours, phone, photos.'); } })),
       bizPicked: st.bizPicked, bizNotPicked: !st.bizPicked,
-      bizCreate: () => { this.setState({ biz: 'panel', oTab: 'home' }); this.toast(st.lang === 'pl' ? 'Wizytówka gotowa. Pakiet ' + st.plan.toUpperCase() + ' — tydzień próbny aktywny.' : 'Card is live. ' + st.plan.toUpperCase() + ' trial week started.'); },
+      welcomeText: st.lang === 'pl' ? 'Witamy w TAPI,' : 'Welcome to TAPI,',
+      bizCreate: () => { 
+        this.setState({ phase: 'bizWelcome' });
+        setTimeout(() => {
+          this.setState({ phase: 'biz', biz: 'panel', oTab: 'home' }); 
+          this.toast(st.lang === 'pl' ? 'Wizytówka gotowa. Pakiet ' + st.plan.toUpperCase() + ' — tydzień próbny aktywny.' : 'Card is live. ' + st.plan.toUpperCase() + ' trial week started.'); 
+        }, 4000);
+      },
 
       bizFlow: st.biz === 'landing' || st.biz === 'flow',
       bizPlans: st.biz === 'plans',
@@ -3146,15 +3225,7 @@ bizEditMode: false,
         if (n >= 3) { this.setState({ biz: 'plans' }); return; }
         this.setState({ bizStep: n + 1, bizManual: false });
       },
-      bizBack: () => {
-        if (st.biz === 'plans') { this.setState({ biz: 'flow', bizStep: 3 }); return; }
-        const n = (st.bizStep || 0);
-        if (n === 1.5) { this.setState({ bizStep: 1, bizManual: false }); return; }
-        if (n === 2) { this.setState({ bizStep: 1.5 }); return; }
-        if (n === 3) { this.setState({ bizStep: 2 }); return; }
-        if (n > 0) { this.setState({ bizStep: n - 1, bizManual: false }); return; }
-        this.setState({ phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' });
-      },
+
       bizIntroTitle: st.lang === 'pl' ? 'Co realnie dostajesz w TAPI' : 'What you actually get with TAPI',
       bizIntroPoints: [
         { title: st.lang === 'pl' ? 'Goście, którzy przechodzą obok' : 'Guests walking past', body: st.lang === 'pl' ? 'Naklejka w witrynie działa 24/7 — także gdy masz zamknięte.' : 'The window sticker works 24/7 — even when you are closed.', delay: '0ms', isSticker: true },
@@ -3312,15 +3383,29 @@ bizEditMode: false,
         if (this.bizBackTmr) {
           clearTimeout(this.bizBackTmr);
           this.bizBackTmr = null;
-          this.state.bizBackStep();
+          if (this.state && this.state.bizBackStep) this.state.bizBackStep();
+        }
+      },
+      bizBackCancel: () => {
+        if (this.bizBackTmr) {
+          clearTimeout(this.bizBackTmr);
+          this.bizBackTmr = null;
         }
       },
       closeBizBackModal: () => this.setState({ bizBackModal: false }),
       bizBackStep: () => {
         this.setState({ bizBackModal: false });
+        if (st.biz === 'panel') { this.setState({ phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' }); return; }
         if (st.biz === 'plans') { this.setState({ biz: 'flow', bizStep: 3 }); return; }
-        if ((st.bizStep || 0) > 0) { this.setState({ bizStep: (st.bizStep || 0) - 1, bizManual: false }); return; }
+        const n = (st.bizStep || 0);
+        if (n === 1.5) { this.setState({ bizStep: 1, bizManual: false }); return; }
+        if (n === 2) { this.setState({ bizStep: 1.5 }); return; }
+        if (n === 3) { this.setState({ bizStep: 2 }); return; }
+        if (n > 0) { this.setState({ bizStep: n - 1, bizManual: false }); return; }
         this.setState({ phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' });
+      },
+      bizBack: () => {
+        if (this.state && this.state.bizBackStep) this.state.bizBackStep();
       },
       bizUndoChanges: () => {
         this.setState({ bizBackModal: false });
@@ -3685,6 +3770,7 @@ bizEditMode: false,
       tBizRegisterTab: this.l3('Zarejestruj lokal', 'Register venue', 'Registra locale'),
       loginBizDirect: () => this.setState({ phase: 'biz', biz: 'panel', bizAccount: true }),
       openFriendsHub: () => this.setState({ friendsOpen: true }),
+      closeFriendsHub: () => this.setState({ friendsOpen: false }),
       setFriendsTabRanking: () => this.setState({ friendsTab: 'ranking' }),
       setFriendsTabNear: () => this.setState({ friendsTab: 'near' }),
       setFriendsTabInvite: () => this.setState({ friendsTab: 'invite' }),
@@ -3864,6 +3950,17 @@ bizEditMode: false,
       pinCta: PL ? 'Zobacz w Odkrywaj' : 'Open in Discover',
       pinShots: pv ? [{ flex: 1.6, grad: pv.grad }, { flex: 1, grad: pv.grad.replace('150deg', '20deg') }, { flex: 1, grad: pv.grad.replace('150deg', '300deg') }] : [],
       pinCta: PL ? 'Otwórz wizytówkę' : 'Open the card',
+      startNavMode: () => { this.setState({ navTransportSelect: true }); },
+      cancelNavTransport: () => { this.setState({ navTransportSelect: false }); },
+      selectNavTransport: (mode) => {
+        let msg = PL ? 'Wytyczanie trasy pieszej...' : 'Calculating walk route...';
+        if (mode === 'car') msg = PL ? 'Wytyczanie trasy samochodowej...' : 'Calculating car route...';
+        if (mode === 'bike') msg = PL ? 'Wytyczanie trasy rowerowej...' : 'Calculating bike route...';
+        if (mode === 'transit') msg = PL ? 'Szukanie połączeń...' : 'Finding transit options...';
+        this.setState({ navTransportSelect: false, navMode: true, mapUiOpacity: 0, navTransportMode: mode });
+        this.toast(msg);
+      },
+      stopNavMode: () => this.setState({ navMode: false, mapUiOpacity: 1 }),
       pinGo: () => {
         if (!pv) return;
         const id = pv.id;
@@ -3992,11 +4089,7 @@ bizEditMode: false,
         this.setState({ bizStep: n, bizManual: false });
       },
       toPlansLabel: PL ? 'Utwórz konto firmy' : 'Create the business account',
-      bizBack: () => {
-        if (st.biz === 'panel') { this.setState({ phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' }); return; }
-        if ((st.bizStep || 0) > 0) { this.setState({ bizStep: (st.bizStep || 0) - 1, bizManual: false }); return; }
-        this.setState({ phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' });
-      },
+
       goBizPanel: () => this.setState({ phase: 'biz', biz: st.registered ? 'panel' : 'flow', bizStep: 0, bizManual: false, bizVerify: 'idle' }),
       showBizNav: st.phase === 'biz' && st.biz === 'panel',
       bizNavItems: [
