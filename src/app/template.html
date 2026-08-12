@@ -2592,15 +2592,79 @@
             </sc-if>
             <sc-if value="{{ manual }}">
               <div style="animation: rise 0.45s cubic-bezier(0.16,1,0.3,1) both;">
-                <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 9px;">
-                  <sc-for list="{{ manualFields }}" as="f" hint-placeholder-count="4">
-                    <input type="text" placeholder="{{ f.ph }}" style="width: 100%; padding: 15px 16px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
-                  </sc-for>
-                </div>
+                  <div style="display: flex; flex-direction: column; gap: 9px;">
+                    <input type="text" placeholder="Nazwa lokalu" style="width: 100%; padding: 15px 16px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
+                    <input type="text" placeholder="Adres" style="width: 100%; padding: 15px 16px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
+                    
+                    <!-- Wybór kategorii / archetypu -->
+                    <div style="position: relative;">
+                      <select style="width: 100%; padding: 15px 16px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C); appearance: none; cursor: pointer;">
+                        <option value="" disabled selected>Wybierz kategorię firmy...</option>
+                        <optgroup label="HOSPITALITY">
+                          <option value="HOSPITALITY">Restauracja / Bar / Kawiarnia</option>
+                          <option value="HOSPITALITY">Food Truck / Pizzeria</option>
+                        </optgroup>
+                        <optgroup label="NOCLEGI">
+                          <option value="NOCLEGI">Hotel / Apartament na wynajem</option>
+                          <option value="NOCLEGI">B&B / Agroturystyka</option>
+                        </optgroup>
+                        <optgroup label="BEAUTY & USŁUGI">
+                          <option value="BEAUTY">Barber / Fryzjer</option>
+                          <option value="BEAUTY">Salon Kosmetyczny / SPA</option>
+                        </optgroup>
+                        <optgroup label="NIGHTLIFE">
+                          <option value="NIGHTLIFE">Klub Nocny / Dyskoteka</option>
+                        </optgroup>
+                        <optgroup label="SERVICES">
+                          <option value="SERVICES">Usługi B2B/B2C / Serwis</option>
+                        </optgroup>
+                      </select>
+                      <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; right: 16px; top: 18px; pointer-events: none;"><path d="M6 9l6 6 6-6"></path></svg>
+                    </div>
+
+                    <!-- Numer NIP/KRS -->
+                    <input type="text" placeholder="NIP / KRS (Weryfikacja firmy)" style="width: 100%; padding: 15px 16px; border-radius: 15px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); outline: none; font-size: 16px; color: var(--ink, #16181C);">
+                    <div style="font-size: 11px; color: var(--sub, #6C6F75); padding-left: 4px;">Twój profil otrzyma status PENDING do czasu weryfikacji NIP.</div>
+                  </div>
                 <div sc-camel-on-click="{{ manualDone }}" style="margin-top: 12px; height: 54px; border-radius: 17px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; font-size: 14.5px; font-weight: 600;">{{ nextLabel }}</div>
                 <div sc-camel-on-click="{{ leaveManual }}" style="margin-top: 10px; text-align: center; font-size: 12.5px; color: var(--sub, #6C6F75); cursor: pointer;">{{ backToSearch }}</div>
               </div>
             </sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ step15 }}">
+          <div style="animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.08;">Regulamin TAPI</div>
+            <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 8px; line-height: 1.5;">Przewiń do końca, aby zapoznać się z warunkami i móc przejść dalej.</div>
+            
+            <div sc-camel-on-scroll="{{ onTosScroll }}" style="margin-top: 18px; padding: 18px; border-radius: 20px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); box-shadow: 0 14px 34px -28px rgba(22,24,28,0.9); height: 280px; overflow-y: auto;">
+              <div style="font-size: 14px; font-weight: 700; color: var(--ink, #16181C); margin-bottom: 12px;">Zasady świadczenia usług B2B i Płatności</div>
+              <div style="font-size: 12px; color: var(--sub, #6C6F75); line-height: 1.7;">
+                1. Rejestracja w TAPI jest w pełni darmowa, a opłaty mogą być naliczane tylko zgodnie z wybranym planem subskrypcyjnym.<br><br>
+                2. Korzystanie z terminala płatności podlega osobnym regulacjom dostawcy infrastruktury płatniczej (Stripe).<br><br>
+                3. Akceptujesz warunki rozliczeń oraz prowizję platformową w wysokości zadeklarowanej na pulpicie B2B.<br><br>
+                4. Zastrzegamy prawo do blokady konta w przypadku wykrycia nadużyć lub prób manipulacji systemem rezerwacji.<br><br>
+                5. Wypłaty zgromadzonych środków odbywają się niezwłocznie po pomyślnej weryfikacji tożsamości firmy (KYC/KYB) i potwierdzeniu NIP/KRS.<br><br>
+                6. W każdym momencie możesz usunąć konto i zażądać zwrotu zgromadzonych środków.<br><br>
+                7. Niniejszy regulamin może ulec zmianie, o czym poinformujemy z 30-dniowym wyprzedzeniem.<br><br>
+                (Przewiń do końca...)
+                <br><br><br><br><br>
+                — Koniec Regulaminu —
+              </div>
+            </div>
+
+            <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px; cursor: {{ tosScrolled ? 'pointer' : 'not-allowed' }}; opacity: {{ tosScrolled ? '1' : '0.5' }};" sc-camel-on-click="{{ toggleTos }}">
+              <div style="width: 24px; height: 24px; border-radius: 6px; border: 2px solid {{ tosAccepted ? 'var(--accl, #57C39F)' : 'var(--hair, rgba(22,24,28,0.2))' }}; background: {{ tosAccepted ? 'var(--accl, #57C39F)' : 'transparent' }}; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FFF" stroke-width="3" style="opacity: {{ tosAccepted ? '1' : '0' }}; transition: opacity 0.2s ease;"><path d="M4 12l5 5L20 6"></path></svg>
+              </div>
+              <div style="font-size: 13.5px; font-weight: 500; color: var(--ink, #16181C);">Akceptuję regulamin płatności i usług TAPI.</div>
+            </div>
+
+            <div sc-camel-on-click="{{ stepNext }}" style="margin-top: 20px; height: 52px; border-radius: 15px; background: {{ tosAccepted ? 'var(--acc, #1F5A46)' : 'var(--hair, rgba(22,24,28,0.1))' }}; color: {{ tosAccepted ? '#FBFAF7' : 'var(--sub, #6C6F75)' }}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: {{ tosAccepted ? 'pointer' : 'not-allowed' }}; transition: all 0.3s ease;">
+              <span>Przejdź dalej</span>
+              <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h13"></path><path d="M13 6l6 6-6 6"></path></svg>
+            </div>
           </div>
           </sc-if>
 

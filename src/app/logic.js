@@ -3117,17 +3117,42 @@ bizEditMode: false,
 
       bizFlow: st.biz === 'landing' || st.biz === 'flow',
       bizPlans: st.biz === 'plans',
-      step0: (st.bizStep || 0) === 0, step1: (st.bizStep || 0) === 1, step2: (st.bizStep || 0) === 2, step3: (st.bizStep || 0) === 3,
+      step0: (st.bizStep || 0) === 0, step1: (st.bizStep || 0) === 1, step15: (st.bizStep || 0) === 1.5, step2: (st.bizStep || 0) === 2, step3: (st.bizStep || 0) === 3,
       showPills: (st.bizStep || 0) > 0,
-      pills: [1, 2, 3].map((i) => ({ fill: (st.bizStep || 0) >= i ? '100%' : '0%' })),
+      pills: [1, 2, 3, 4].map((i) => ({ fill: (st.bizStep || 0) >= (i===2 ? 1.5 : (i===3 ? 2 : (i===4 ? 3 : i))) ? '100%' : '0%' })),
+      
+      tosScrolled: false,
+      tosAccepted: false,
+      onTosScroll: (e) => {
+        if (this.state.tosScrolled) return;
+        const el = e.target;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 15) {
+          this.setState({ tosScrolled: true });
+        }
+      },
+      toggleTos: () => {
+        if (this.state.tosScrolled) this.setState({ tosAccepted: !this.state.tosAccepted });
+      },
+
       stepNext: () => {
-        const n = (st.bizStep || 0) + 1;
-        if (n > 3) { this.setState({ biz: 'plans' }); return; }
-        this.setState({ bizStep: n, bizManual: false });
+        const n = (st.bizStep || 0);
+        if (n === 1) { this.setState({ bizStep: 1.5, bizManual: false }); return; }
+        if (n === 1.5) { 
+          if (!st.tosAccepted) return;
+          this.setState({ bizStep: 2 }); 
+          return; 
+        }
+        if (n === 2) { this.setState({ bizStep: 3 }); return; }
+        if (n >= 3) { this.setState({ biz: 'plans' }); return; }
+        this.setState({ bizStep: n + 1, bizManual: false });
       },
       bizBack: () => {
         if (st.biz === 'plans') { this.setState({ biz: 'flow', bizStep: 3 }); return; }
-        if ((st.bizStep || 0) > 0) { this.setState({ bizStep: (st.bizStep || 0) - 1, bizManual: false }); return; }
+        const n = (st.bizStep || 0);
+        if (n === 1.5) { this.setState({ bizStep: 1, bizManual: false }); return; }
+        if (n === 2) { this.setState({ bizStep: 1.5 }); return; }
+        if (n === 3) { this.setState({ bizStep: 2 }); return; }
+        if (n > 0) { this.setState({ bizStep: n - 1, bizManual: false }); return; }
         this.setState({ phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' });
       },
       bizIntroTitle: st.lang === 'pl' ? 'Co realnie dostajesz w TAPI' : 'What you actually get with TAPI',
@@ -3143,7 +3168,12 @@ bizEditMode: false,
       manual: !!st.bizManual, notManual: !st.bizManual,
       goManual: () => this.setState({ bizManual: true }),
       leaveManual: () => this.setState({ bizManual: false }),
-      manualDone: () => this.setState({ bizStep: 2, bizPicked: st.lang === 'pl' ? 'Twój lokal' : 'Your venue', bizManual: false }),
+      manualDone: () => {
+        // Zapisz wybraną kategorię
+        const catSelect = document.querySelector('select');
+        const cat = catSelect ? catSelect.value : 'HOSPITALITY';
+        this.setState({ bizStep: 1.5, bizPicked: st.lang === 'pl' ? 'Twój lokal' : 'Your venue', bizManual: false, bizCategory: cat });
+      },
       manualFields: [
         { ph: st.lang === 'pl' ? 'Nazwa lokalu' : 'Venue name' },
         { ph: st.lang === 'pl' ? 'Adres' : 'Address' }
