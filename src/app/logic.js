@@ -1967,7 +1967,22 @@ class Component extends DCLogic {
       pulled2: st.lang === 'pl' ? '18 zdjęć i 212 opinii' : '18 photos and 212 reviews',
       pulled3: st.lang === 'pl' ? 'Menu i pozycja na mapie' : 'Menu and map position',
       createLabel: st.lang === 'pl' ? 'Utwórz wizytówkę' : 'Create the card',
-      openLivePreview: () => this.setState({ bizLivePreview: true, isVenue: true }),
+      openLivePreview: () => {
+        const mockV = {
+          id: 'mock_preview',
+          name: st.bizData ? st.bizData.name : 'Twój Lokal',
+          typeLabel: st.bizCategory === 'apartments' ? 'Apartamenty' : 'Restauracja',
+          address: 'Kraków, Rynek Główny 1',
+          openStatus: 'Otwarte',
+          phone: '+48 123 456 789',
+          rating: 4.8,
+          photos: [
+            'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=800&q=80'
+          ]
+        };
+        this.setState({ bizLivePreview: true, isVenue: true, v: mockV });
+      },
       scanMenu: () => this.toast(st.lang === 'pl' ? 'Uruchamiam skaner menu z AI...' : 'Starting AI menu scanner...'),
       chartLabel: st.lang === 'pl' ? 'Skany · 7 dni' : 'Scans · 7 days',
       liveLabel: st.lang === 'pl' ? 'Na żywo' : 'Live',
@@ -3026,6 +3041,7 @@ class Component extends DCLogic {
       },
       bizFromLogin: () => this.setState({ mail: null, gate: false, mailStep: 'mail', code: '',
         phase: 'biz', biz: 'flow', bizStep: 0, bizManual: false, bizVerify: 'idle',
+bizEditMode: false,
       bizCategory: 'apartments',
       bizLivePreview: false, bizCategory: 'apartments', bizLivePreview: false }),
       delEntry: this.l3('Usuń konto', 'Delete account', 'Elimina account'),
@@ -3255,6 +3271,36 @@ class Component extends DCLogic {
         { who: 'TR', text: st.lang === 'pl' ? 'Tomek R. · kupon wygasł' : 'Tomek R. · coupon expired', time: '16:31', delay: '180ms' }
       ],
       downloadQR: () => this.toast(st.lang === 'pl' ? 'Naklejka A5 w PDF — wysłana na maila.' : 'A5 sticker PDF sent to your inbox.'),
+      bizBackDown: () => {
+        this.bizBackTmr = setTimeout(() => {
+          this.bizBackTmr = null;
+          if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+          this.setState({ bizBackModal: true });
+        }, 500);
+      },
+      bizBackUp: () => {
+        if (this.bizBackTmr) {
+          clearTimeout(this.bizBackTmr);
+          this.bizBackTmr = null;
+          this.state.bizBackStep();
+        }
+      },
+      closeBizBackModal: () => this.setState({ bizBackModal: false }),
+      bizBackStep: () => {
+        this.setState({ bizBackModal: false });
+        if (st.biz === 'plans') { this.setState({ biz: 'flow', bizStep: 3 }); return; }
+        if ((st.bizStep || 0) > 0) { this.setState({ bizStep: (st.bizStep || 0) - 1, bizManual: false }); return; }
+        this.setState({ phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' });
+      },
+      bizUndoChanges: () => {
+        this.setState({ bizBackModal: false });
+        this.toast(st.lang === 'pl' ? 'Cofnięto zmiany.' : 'Changes undone.');
+        // Reset logic if needed
+      },
+      bizBackHome: () => {
+        this.setState({ bizBackModal: false, phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' });
+      },
+      toggleBizEdit: () => this.setState({ bizEditMode: !this.state.bizEditMode }),
       exitBiz: () => { this.setState({ phase: (st.user || st.entered) ? 'app' : 'auth', tab: 'profile' }); },
 
       /* ══ FILTRY I SORTOWANIE ══ */

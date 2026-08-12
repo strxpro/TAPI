@@ -2391,7 +2391,7 @@
       <sc-if value="{{ isBiz }}">
       <div style="position: absolute; inset: 0; overflow-y: auto; background: var(--paper, #F4F2ED); animation: screenIn 0.45s cubic-bezier(0.16,1,0.3,1) both;">
         <div style="position: sticky; top: 0; z-index: 30; padding: 50px 16px 10px; background: linear-gradient(var(--paper, #F4F2ED) 74%, transparent); display: flex; align-items: center; gap: 12px;">
-          <div sc-camel-on-click="{{ exitBiz }}" style="width: 38px; height: 38px; border-radius: 12px; cursor: pointer; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); display: flex; align-items: center; justify-content: center;" style-active="transform: scale(0.95);">
+          <div sc-camel-on-pointer-down="{{ bizBackDown }}" sc-camel-on-pointer-up="{{ bizBackUp }}" sc-camel-on-pointer-cancel="{{ bizBackUp }}" style="width: 38px; height: 38px; border-radius: 12px; cursor: pointer; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); display: flex; align-items: center; justify-content: center; user-select: none;" style-active="transform: scale(0.95); background: var(--hair, rgba(22,24,28,0.05));">
             <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--ink, #16181C)" stroke-width="2.2"><path d="M15 18l-6-6 6-6"></path></svg>
           </div>
           <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px;">
@@ -2656,14 +2656,22 @@
 
           <sc-if value="{{ step3 }}">
           <div style="animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;">
-            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.08;">{{ sumTitle }}</div>
+            <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+              <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; line-height: 1.08;">{{ sumTitle }}</div>
+              <div sc-camel-on-click="{{ toggleBizEdit }}" style="padding: 6px 12px; border-radius: 99px; background: {{ bizEditMode ? 'var(--accl, #57C39F)' : 'var(--surf, #FFF)' }}; color: {{ bizEditMode ? '#FFF' : 'var(--ink, #16181C)' }}; border: 1px solid {{ bizEditMode ? 'var(--accl, #57C39F)' : 'var(--hair, rgba(22,24,28,0.15))' }}; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s ease;">{{ bizEditMode ? 'Gotowe' : 'Edytuj' }}</div>
+            </div>
             <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 8px;">{{ sumSub }}</div>
-            <div style="margin-top: 16px; border-radius: 20px; overflow: hidden; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1));">
+            <div style="margin-top: 16px; border-radius: 20px; overflow: hidden; background: var(--surf, #FFF); border: 1px solid {{ bizEditMode ? 'var(--accl, #57C39F)' : 'var(--hair, rgba(22,24,28,0.1))' }}; transition: border 0.3s ease; cursor: {{ bizEditMode ? 'pointer' : 'default' }};" style-active="{{ bizEditMode ? 'background: var(--hair, rgba(22,24,28,0.02))' : '' }}">
               <sc-for list="{{ sumRows }}" as="r" hint-placeholder-count="6">
                 <div style="display: flex; align-items: center; gap: 12px; padding: 13px 15px; border-bottom: 1px solid var(--hair, rgba(22,24,28,0.07)); animation: rise 0.45s cubic-bezier(0.16,1,0.3,1) both; animation-delay: {{ r.delay }};">
                   <div style="font-size: 11.5px; color: var(--sub, #6C6F75); width: 84px; flex-shrink: 0;">{{ r.label }}</div>
                   <div style="flex: 1; min-width: 0; font-size: 13px; font-weight: 500;">{{ r.value }}</div>
-                  <svg width="13" height="13" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.8" style="flex-shrink: 0;"><path d="M4 12l5 5L20 6"></path></svg>
+                  <sc-if value="{{ bizEditMode }}">
+                    <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--sub, #6C6F75)" stroke-width="2" style="flex-shrink: 0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ !bizEditMode }}">
+                    <svg width="13" height="13" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--acct, #1F5A46)" stroke-width="2.8" style="flex-shrink: 0;"><path d="M4 12l5 5L20 6"></path></svg>
+                  </sc-if>
                 </div>
               </sc-for>
             </div>
@@ -2671,13 +2679,24 @@
             <!-- Dynamiczny asystent wg kategorii z Google (AI) -->
             <sc-if value="{{ bizCategory == 'food' }}">
               <div style="margin-top: 20px;">
-                <div style="font-size: 13px; font-weight: 600; color: var(--ink, #16181C);">Zdjęcia i Menu z Google</div>
-                <div style="font-size: 11.5px; color: var(--sub, #6C6F75); margin-top: 3px;">Upewnij się, że Twoja oferta jest aktualna.</div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--ink, #16181C);">Zdjęcia i Menu z Google</div>
+                    <div style="font-size: 11.5px; color: var(--sub, #6C6F75); margin-top: 3px;">Upewnij się, że Twoja oferta jest aktualna.</div>
+                  </div>
+                  <sc-if value="{{ bizEditMode }}">
+                    <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(87,195,159,0.15); display: flex; align-items: center; justify-content: center; color: var(--acct, #1F5A46); cursor: pointer;"><svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                  </sc-if>
+                </div>
                 
                 <div style="display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
-                  <div style="width: 80px; height: 80px; border-radius: 12px; background: url('https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=150&q=80') center/cover; flex-shrink: 0; box-shadow: 0 4px 10px rgba(22,24,28,0.1);"></div>
-                  <div style="width: 80px; height: 80px; border-radius: 12px; background: url('https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=150&q=80') center/cover; flex-shrink: 0; box-shadow: 0 4px 10px rgba(22,24,28,0.1);"></div>
-                  <div style="width: 80px; height: 80px; border-radius: 12px; background: var(--surf, #FFF); border: 2px dashed var(--hair, rgba(22,24,28,0.2)); flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--sub, #6C6F75);">
+                  <div style="width: 80px; height: 80px; border-radius: 12px; background: url('https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=150&q=80') center/cover; flex-shrink: 0; box-shadow: 0 4px 10px rgba(22,24,28,0.1); position: relative;">
+                    <sc-if value="{{ bizEditMode }}"><div style="position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; border-radius: 10px; background: #DC2626; color: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"><svg width="10" height="10" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div></sc-if>
+                  </div>
+                  <div style="width: 80px; height: 80px; border-radius: 12px; background: url('https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=150&q=80') center/cover; flex-shrink: 0; box-shadow: 0 4px 10px rgba(22,24,28,0.1); position: relative;">
+                    <sc-if value="{{ bizEditMode }}"><div style="position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; border-radius: 10px; background: #DC2626; color: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"><svg width="10" height="10" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div></sc-if>
+                  </div>
+                  <div style="width: 80px; height: 80px; border-radius: 12px; background: var(--surf, #FFF); border: 2px dashed {{ bizEditMode ? 'var(--accl, #57C39F)' : 'var(--hair, rgba(22,24,28,0.2))' }}; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: {{ bizEditMode ? 'var(--acct, #1F5A46)' : 'var(--sub, #6C6F75)' }}; cursor: pointer;">
                     <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                   </div>
                 </div>
@@ -2713,11 +2732,13 @@
             <div style="margin-top: 20px;">
               <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div style="font-size: 13px; font-weight: 600; color: var(--ink, #16181C);">Godziny Otwarcia</div>
-                <div style="width: 24px; height: 24px; border-radius: 6px; background: rgba(22,24,28,0.05); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                  <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                </div>
+                <sc-if value="{{ bizEditMode }}">
+                  <div style="width: 24px; height: 24px; border-radius: 6px; background: rgba(87,195,159,0.15); color: var(--acct, #1F5A46); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                  </div>
+                </sc-if>
               </div>
-              <div style="margin-top: 8px; padding: 12px; border-radius: 14px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.1)); display: flex; flex-direction: column; gap: 6px;">
+              <div style="margin-top: 8px; padding: 12px; border-radius: 14px; background: var(--surf, #FFF); border: 1px solid {{ bizEditMode ? 'var(--accl, #57C39F)' : 'var(--hair, rgba(22,24,28,0.1))' }}; display: flex; flex-direction: column; gap: 6px; transition: border 0.3s ease; cursor: {{ bizEditMode ? 'pointer' : 'default' }};" style-active="{{ bizEditMode ? 'background: var(--hair, rgba(22,24,28,0.02))' : '' }}">
                 <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink, #16181C);">
                   <span style="color: var(--sub, #6C6F75);">Poniedziałek - Piątek</span>
                   <span style="font-weight: 500;">08:00 - 22:00</span>
@@ -2730,8 +2751,15 @@
             </div>
 
             <div style="margin-top: 20px;">
-              <div style="font-size: 13px; font-weight: 600; color: var(--ink, #16181C);">Opinie z Google</div>
-              <div style="margin-top: 10px; padding: 12px; border-radius: 16px; background: rgba(251,192,45,0.08); border: 1px solid rgba(251,192,45,0.2);">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="font-size: 13px; font-weight: 600; color: var(--ink, #16181C);">Opinie z Google</div>
+                <sc-if value="{{ bizEditMode }}">
+                  <div style="width: 24px; height: 24px; border-radius: 6px; background: rgba(87,195,159,0.15); color: var(--acct, #1F5A46); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="margin-top: 10px; padding: 12px; border-radius: 16px; background: rgba(251,192,45,0.08); border: 1px solid {{ bizEditMode ? 'var(--accl, #57C39F)' : 'rgba(251,192,45,0.2)' }}; transition: border 0.3s ease; cursor: {{ bizEditMode ? 'pointer' : 'default' }};" style-active="{{ bizEditMode ? 'background: rgba(251,192,45,0.15)' : '' }}">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 20px; font-weight: 800; color: #F57F17;">4.8</span>
                   <div style="display: flex; color: #FBC02D;"><svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg><svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg><svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg><svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg><svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg></div>
@@ -2745,9 +2773,7 @@
               <span>Podgląd dla Klientów (Live Preview)</span>
               <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FBFAF7" stroke-width="2.4"><path d="M5 12h13"></path><path d="M13 6l6 6-6 6"></path></svg>
             </div>
-            <div sc-camel-on-click="{{ stepNext }}" style="margin-top: 12px; height: 44px; border-radius: 14px; cursor: pointer; background: transparent; color: var(--sub, #6C6F75); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">
-              Opublikuj później bez podglądu
-            </div>
+
 
           </div>
           </sc-if>
@@ -3506,6 +3532,34 @@
         </div>
         </sc-if>
         </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- ░░ BIZ BACK MODAL ░░ -->
+      <sc-if value="{{ bizBackModal }}">
+      <div style="position: absolute; inset: 0; z-index: 400; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div sc-camel-on-click="{{ closeBizBackModal }}" style="position: absolute; inset: 0; background: rgba(22,24,28,0.45); animation: fadeIn 0.3s ease both;"></div>
+        <div style="position: relative; background: var(--paper, #F4F2ED); border-radius: 28px 28px 0 0; padding: 24px 20px 32px; animation: sheetUp 0.4s cubic-bezier(0.16,1,0.3,1) both; box-shadow: 0 -10px 40px rgba(0,0,0,0.3);">
+          <div style="width: 40px; height: 5px; border-radius: 5px; background: var(--hair, rgba(22,24,28,0.15)); margin: 0 auto 20px;"></div>
+          <div style="font-size: 18px; font-weight: 700; color: var(--ink, #16181C); text-align: center; margin-bottom: 24px;">Opcje powrotu</div>
+          
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div sc-camel-on-click="{{ bizBackStep }}" style="padding: 16px; border-radius: 16px; background: var(--surf, #FFF); font-size: 15px; font-weight: 600; color: var(--ink, #16181C); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--hair, rgba(22,24,28,0.1)); cursor: pointer;" style-active="background: var(--hair, rgba(22,24,28,0.05));">
+              <span>Cofnij o jeden krok</span>
+              <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+            </div>
+            
+            <div sc-camel-on-click="{{ bizUndoChanges }}" style="padding: 16px; border-radius: 16px; background: var(--surf, #FFF); font-size: 15px; font-weight: 600; color: var(--ink, #16181C); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--hair, rgba(22,24,28,0.1)); cursor: pointer;" style-active="background: var(--hair, rgba(22,24,28,0.05));">
+              <span>Cofnij zmiany</span>
+              <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            </div>
+            
+            <div sc-camel-on-click="{{ bizBackHome }}" style="padding: 16px; border-radius: 16px; background: rgba(220,38,38,0.08); font-size: 15px; font-weight: 600; color: #DC2626; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(220,38,38,0.2); cursor: pointer; margin-top: 8px;" style-active="background: rgba(220,38,38,0.15);">
+              <span>Wróć do ekranu głównego</span>
+              <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </div>
+          </div>
+        </div>
       </div>
       </sc-if>
 
