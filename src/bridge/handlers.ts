@@ -1,7 +1,7 @@
 import { supabase, hasBackend } from '../lib/supabase';
 import { planDay, searchPlaces, geocode, reverseGeocode } from '../lib/api';
 import { cue, type Cue } from '../ui/feedback';
-import { naWidok, type Punkt } from './venueShape';
+import { naWidok, wydarzenieNaWidok, type Punkt } from './venueShape';
 
 /**
  * Co potrafi most.
@@ -136,9 +136,33 @@ const dbVenues: Handler = async (p) => {
   return { venues: (data ?? []).map((v) => naWidok(v, wgLokalu.get(v.id) ?? [], od)) };
 };
 
-const dbEvents: Handler = async () => {
-  const { data, error } = await supabase.from('events').select('*').order('starts_at');
-  return error ? { error: error.message } : { events: data ?? [] };
+/**
+ * Wydarzenia, które dopiero będą.
+ *
+ * Odcięcie przeszłości robimy tutaj, a nie w widoku: aplikacja odpowiada na
+ * pytanie „co się dzieje w mieście", a wczorajszy koncert nie jest odpowiedzią.
+ * Widok liczy z daty etykiety JUTRO / WEEKEND, więc ujemna liczba dni
+ * podpisałaby wydarzenie sprzed tygodnia słowem „JUTRO".
+ */
+const dbEvents: Handler = async (p) => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .gte('starts_at', new Date().toISOString())
+    .order('starts_at');
+  if (error) return { error: error.message };
+
+  // Odległość liczy się od lokalu, a wydarzenie zna tylko jego identyfikator.
+  const { data: lokale } = await supabase.from('venues').select('id, lat, lng');
+  const wg = new Map((lokale ?? []).map((v) => [v.id, v]));
+
+  const od: Punkt | null =
+    typeof p.lat === 'number' && typeof p.lng === 'number'
+      ? { lat: p.lat as number, lng: p.lng as number }
+      : null;
+
+  return { events: (data ?? []).map((e) => wydarzenieNaWidok(e, wg.get(e.venue_id), od)) };
 };
 
 const dbToggleSaved: Handler = async (p) => {

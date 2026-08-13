@@ -455,7 +455,7 @@ class Component extends DCLogic {
   headRef = React.createRef();
 
   /**
-   * Katalog lokali z bazy.
+   * Katalog lokali i afisz wydarzeń z bazy.
    *
    * MOCK zostaje jako zapas. Bez sieci albo przy błędzie aplikacja pokazuje to,
    * co ma wbudowane — pusta lista wygląda jak awaria, a nie jak brak zasięgu.
@@ -464,7 +464,7 @@ class Component extends DCLogic {
    * `od` to pozycja gościa. Podana — odległości są prawdziwe; pominięta —
    * w ich miejscu jest myślnik.
    */
-  loadVenues(od) {
+  loadCatalog(od) {
     if (!window.TAPI || !window.TAPI.call) {
       // Most dokłada się po załadowaniu dokumentu, a ten kod biegnie wcześniej.
       // Czekamy na sygnał zamiast odpytywać w pętli — inaczej pierwsze
@@ -473,22 +473,33 @@ class Component extends DCLogic {
         this._venuesWaiting = true;
         window.addEventListener('tapi:ready', () => {
           this._venuesWaiting = false;
-          this.loadVenues(od);
+          this.loadCatalog(od);
         }, { once: true });
       }
       return;
     }
+
     window.TAPI.call('db.venues', od || {}).then((r) => {
       if (!r || r.error || !r.venues || !r.venues.length) return;
       this.venues = r.venues;
       this.setState({ venuesSrc: 'baza' });
+    }).catch(() => {});
+
+    // Wydarzenia osobnym zapytaniem, nie jednym z lokalami. Gdy jedno padnie,
+    // drugie ma się pokazać — katalog i afisz to dwie niezależne rzeczy.
+    // Pusta lista jest tu prawidłową odpowiedzią: znaczy „nic w planie",
+    // a nie „nie udało się", więc podmieniamy także wtedy.
+    window.TAPI.call('db.events', od || {}).then((r) => {
+      if (!r || r.error || !Array.isArray(r.events)) return;
+      this.eventDefs = r.events;
+      this.setState({ eventsSrc: 'baza' });
     }).catch(() => {});
   }
 
   componentDidMount() {
     const d = this.detectLang();
     if (d !== 'pl') this.setState({ lang: d, langAuto: d });
-    this.loadVenues();
+    this.loadCatalog();
     this.splashT = setTimeout(() => this.setState({ phase: 'auth' }), 2150);
     this.tick = setInterval(() => {
       if (this.state.coupon && this.state.secs > 0) this.setState((s) => ({ secs: s.secs - 1 }));
@@ -555,7 +566,7 @@ class Component extends DCLogic {
         // przy lokalach przestają być ozdobą i zaczynają coś znaczyć, więc
         // od razu prosimy o katalog policzony względem gościa.
         this.geo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        this.loadVenues(this.geo);
+        this.loadCatalog(this.geo);
         proceed(fallbackSpots); // In reality we'd map lat/lon to map spots
       }, (err) => {
         this.toast('Błąd GPS: ' + err.message);
@@ -2809,7 +2820,10 @@ class Component extends DCLogic {
         bg: on ? th.ink : th.surf, fg: on ? th.paper : th.sub, border: on ? th.ink : th.hair,
         pick: () => this.setState({ evWhen: w.id }) }; }),
       evList: evHits.map((e, i) => ({
-        mon: LI ? 'AGO' : (PL ? 'SIE' : 'AUG'), day: String(e.day), dow: e.dow[LI ? 2 : (PL ? 0 : 1)],
+        // Miesiąc z daty wydarzenia. Wcześniej był tu wpisany sierpień — na
+        // danych z pliku nikt tego nie widział, bo wszystkie były sierpniowe.
+        mon: (e.mon || ['SIE', 'AUG', 'AGO'])[LI ? 2 : (PL ? 0 : 1)],
+        day: String(e.day), dow: e.dow[LI ? 2 : (PL ? 0 : 1)],
         time: e.time, title: LI ? e.it : (PL ? e.pl : e.en), place: e.place, dist: e.dist,
         price: e.price === 0 ? (LI ? 'ingresso libero' : (PL ? 'wejście wolne' : 'free entry')) : e.price + ' zł',
         tag: e.d <= 1 ? (LI ? 'DOMANI' : (PL ? 'JUTRO' : 'TOMORROW'))

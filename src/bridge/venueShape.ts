@@ -156,3 +156,61 @@ export function naWidok(
     stories: relacje.map((s) => [s.title ?? '', s.body ?? '']),
   };
 }
+
+/* ────────────────────────────────────────────────────────────── wydarzenia ── */
+
+/** Kolejność jak w `Date.getDay()`. Skróty takie, jakich używa prototyp. */
+const DOW = {
+  pl: ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So'],
+  en: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+  it: ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'],
+};
+
+const MIESIACE = {
+  pl: ['STY', 'LUT', 'MAR', 'KWI', 'MAJ', 'CZE', 'LIP', 'SIE', 'WRZ', 'PAŹ', 'LIS', 'GRU'],
+  en: ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+  it: ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC'],
+};
+
+/**
+ * Ile pełnych dni dzieli dziś od wydarzenia.
+ *
+ * Liczymy po dobach kalendarzowych, nie po godzinach: koncert dziś o 23:00
+ * i jutro o 1:00 dzieli dwie godziny, ale to „dziś" i „jutro", i tak trzeba
+ * je podpisać. Widok robi z tej liczby etykiety JUTRO / WEEKEND / ZA TYDZIEŃ.
+ */
+function zaIleDni(kiedy: Date, dzis: Date): number {
+  const a = Date.UTC(dzis.getFullYear(), dzis.getMonth(), dzis.getDate());
+  const b = Date.UTC(kiedy.getFullYear(), kiedy.getMonth(), kiedy.getDate());
+  return Math.round((b - a) / 86400000);
+}
+
+export function wydarzenieNaWidok(
+  row: Row,
+  lokal: { lat?: number; lng?: number } | undefined,
+  od: Punkt | null,
+  dzis = new Date(),
+): Row {
+  const kiedy = new Date(row.starts_at);
+
+  return {
+    id: row.id,
+    venue: row.venue_id,
+    d: zaIleDni(kiedy, dzis),
+    day: kiedy.getDate(),
+    // Prototyp miał tu wpisane na sztywno „SIE" — na danych z pliku nikt tego
+    // nie zauważył, bo wszystkie wydarzenia były sierpniowe. Z prawdziwymi
+    // datami wrześniowy koncert podpisałby się sierpniem.
+    mon: [MIESIACE.pl[kiedy.getMonth()], MIESIACE.en[kiedy.getMonth()], MIESIACE.it[kiedy.getMonth()]],
+    dow: [DOW.pl[kiedy.getDay()], DOW.en[kiedy.getDay()], DOW.it[kiedy.getDay()]],
+    time: `${kiedy.getHours()}:${String(kiedy.getMinutes()).padStart(2, '0')}`,
+    price: Number(row.price ?? 0),
+    cat: row.cat ?? '',
+    district: row.district ?? '',
+    pl: row.title_pl ?? '',
+    en: row.title_en ?? row.title_pl ?? '',
+    it: row.title_it ?? row.title_pl ?? '',
+    place: row.place ?? '',
+    dist: odleglosc(od, lokal ?? {}),
+  };
+}
