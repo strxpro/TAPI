@@ -1,6 +1,7 @@
 import { supabase, hasBackend } from '../lib/supabase';
 import { planDay, searchPlaces, geocode, reverseGeocode } from '../lib/api';
 import { cue, type Cue } from '../ui/feedback';
+import { naWidok, type Punkt } from './venueShape';
 
 /**
  * Co potrafi most.
@@ -98,9 +99,41 @@ async function sessionShape() {
 
 /* ──────────────────────────────────────────────────────────────── baza ── */
 
-const dbVenues: Handler = async () => {
-  const { data, error } = await supabase.from('venues').select('*').order('rating', { ascending: false });
-  return error ? { error: error.message } : { venues: data ?? [] };
+/**
+ * Katalog lokali w kształcie, jakiego oczekuje widok.
+ *
+ * `lat` i `lng` są opcjonalne — gdy strona zna pozycję gościa, odległości są
+ * prawdziwe; gdy nie, w ich miejscu jest myślnik. Przepisanie kształtu robi
+ * `venueShape.ts`, żeby ekrany zostały nietknięte.
+ */
+const dbVenues: Handler = async (p) => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+  const { data, error } = await supabase
+    .from('venues')
+    .select('*')
+    .order('rating', { ascending: false });
+  if (error) return { error: error.message };
+
+  // Relacje jednym zapytaniem zamiast jednego na lokal. RLS i tak odda
+  // wyłącznie te, które akurat trwają.
+  const { data: stories } = await supabase
+    .from('stories')
+    .select('venue_id, title, body')
+    .order('published_at', { ascending: false });
+
+  const wgLokalu = new Map<string, Array<{ title: string | null; body: string | null }>>();
+  for (const s of stories ?? []) {
+    const lista = wgLokalu.get(s.venue_id) ?? [];
+    lista.push({ title: s.title, body: s.body });
+    wgLokalu.set(s.venue_id, lista);
+  }
+
+  const od: Punkt | null =
+    typeof p.lat === 'number' && typeof p.lng === 'number'
+      ? { lat: p.lat as number, lng: p.lng as number }
+      : null;
+
+  return { venues: (data ?? []).map((v) => naWidok(v, wgLokalu.get(v.id) ?? [], od)) };
 };
 
 const dbEvents: Handler = async () => {

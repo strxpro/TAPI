@@ -103,8 +103,13 @@ export const BRIDGE_SCRIPT = `
     },
   };
 
-  // Strona może czekać na most, zanim zdąży się wstrzyknąć.
+  // Most wstrzykuje się po załadowaniu dokumentu, więc widok bywa gotowy
+  // pierwszy i nie ma jeszcze na czym zapisać nasłuchu przez TAPI.on.
+  // Zdarzenie na oknie i znacznik działają niezależnie od kolejności:
+  // kto był wcześniej, ten czeka na sygnał; kto później, ten widzi znacznik.
+  window.__tapiReady = true;
   window.__tapiEmit('ready', { native: window.TAPI.native });
+  try { window.dispatchEvent(new Event('tapi:ready')); } catch (e) {}
 })();
 true;
 `;

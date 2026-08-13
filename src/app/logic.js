@@ -454,9 +454,41 @@ class Component extends DCLogic {
   mapSearchRef = React.createRef();
   headRef = React.createRef();
 
+  /**
+   * Katalog lokali z bazy.
+   *
+   * MOCK zostaje jako zapas. Bez sieci albo przy błędzie aplikacja pokazuje to,
+   * co ma wbudowane — pusta lista wygląda jak awaria, a nie jak brak zasięgu.
+   * Dlatego podmieniamy dopiero wtedy, gdy naprawdę coś przyszło.
+   *
+   * `od` to pozycja gościa. Podana — odległości są prawdziwe; pominięta —
+   * w ich miejscu jest myślnik.
+   */
+  loadVenues(od) {
+    if (!window.TAPI || !window.TAPI.call) {
+      // Most dokłada się po załadowaniu dokumentu, a ten kod biegnie wcześniej.
+      // Czekamy na sygnał zamiast odpytywać w pętli — inaczej pierwsze
+      // zapytanie przepada i katalog zostaje na danych z pliku do końca sesji.
+      if (!this._venuesWaiting) {
+        this._venuesWaiting = true;
+        window.addEventListener('tapi:ready', () => {
+          this._venuesWaiting = false;
+          this.loadVenues(od);
+        }, { once: true });
+      }
+      return;
+    }
+    window.TAPI.call('db.venues', od || {}).then((r) => {
+      if (!r || r.error || !r.venues || !r.venues.length) return;
+      this.venues = r.venues;
+      this.setState({ venuesSrc: 'baza' });
+    }).catch(() => {});
+  }
+
   componentDidMount() {
     const d = this.detectLang();
     if (d !== 'pl') this.setState({ lang: d, langAuto: d });
+    this.loadVenues();
     this.splashT = setTimeout(() => this.setState({ phase: 'auth' }), 2150);
     this.tick = setInterval(() => {
       if (this.state.coupon && this.state.secs > 0) this.setState((s) => ({ secs: s.secs - 1 }));
@@ -519,6 +551,11 @@ class Component extends DCLogic {
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((pos) => {
+        // Pozycja nie służy tylko do zdjęcia mgły z mapy. Z nią odległości
+        // przy lokalach przestają być ozdobą i zaczynają coś znaczyć, więc
+        // od razu prosimy o katalog policzony względem gościa.
+        this.geo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        this.loadVenues(this.geo);
         proceed(fallbackSpots); // In reality we'd map lat/lon to map spots
       }, (err) => {
         this.toast('Błąd GPS: ' + err.message);
@@ -749,7 +786,10 @@ class Component extends DCLogic {
       var id = String(r.code || '');
       var m = id.match(/tapi\.app\/v\/([\w-]+)/);
       if (m) id = m[1];
-      var known = (window.MOCK && window.MOCK.venues || []).filter(function (v) { return v.id === id; })[0];
+      // Szukamy w katalogu, który aplikacja ma pod ręką — a to od teraz baza,
+      // nie dane testowe. Naklejka wydrukowana dla nowego lokalu działałaby
+      // dopiero po przebudowaniu aplikacji, gdyby zostało `window.MOCK`.
+      var known = (this.venues || []).filter(function (v) { return v.id === id; })[0];
       if (!known) { this.toast(this.l3('Nie znam tego kodu.', 'Unknown code.', 'Codice sconosciuto.')); return; }
 
       this.openVenue(known.id, true);
@@ -865,7 +905,9 @@ class Component extends DCLogic {
       if (!q) return true;
       return (v.name + ' ' + v.catLabel + ' ' + v.district).toLowerCase().indexOf(q) > -1;
     });
-    const m = (v) => parseFloat(v.dist) * (v.dist.indexOf('km') > -1 ? 1000 : 1);
+    // Bez zgody na pozycję odległość to myślnik. Takie lokale idą na koniec,
+    // zamiast rozsypywać kolejność wartością NaN.
+    const m = (v) => { const n = parseFloat(v.dist); return isNaN(n) ? Infinity : n * (v.dist.indexOf('km') > -1 ? 1000 : 1); };
     const s = st.sortBy || 'reco';
     if (s === 'cheap') out = out.slice().sort((a, b) => a.price.length - b.price.length || b.rating - a.rating);
     else if (s === 'rated') out = out.slice().sort((a, b) => b.rating - a.rating || b.votes - a.votes);
@@ -1860,7 +1902,7 @@ class Component extends DCLogic {
       if (!mq) return true;
       return (x.name + ' ' + x.catLabel + ' ' + x.district).toLowerCase().indexOf(mq) > -1;
     }).slice().sort((a, b) => {
-      const m = (v) => parseFloat(v.dist) * (v.dist.indexOf('km') > -1 ? 1000 : 1);
+      const m = (v) => { const n = parseFloat(v.dist); return isNaN(n) ? Infinity : n * (v.dist.indexOf('km') > -1 ? 1000 : 1); };
       const s = st.sortBy || 'reco';
       if (s === 'cheap') return a.price.length - b.price.length || b.rating - a.rating;
       if (s === 'rated') return b.rating - a.rating || b.votes - a.votes;
