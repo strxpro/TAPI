@@ -465,20 +465,24 @@ class Component extends DCLogic {
    * w ich miejscu jest myślnik.
    */
   loadCatalog(od) {
-    if (!window.TAPI || !window.TAPI.call) {
-      // Most dokłada się po załadowaniu dokumentu, a ten kod biegnie wcześniej.
-      // Czekamy na sygnał zamiast odpytywać w pętli — inaczej pierwsze
-      // zapytanie przepada i katalog zostaje na danych z pliku do końca sesji.
-      if (!this._venuesWaiting) {
-        this._venuesWaiting = true;
-        window.addEventListener('tapi:ready', () => {
-          this._venuesWaiting = false;
-          this.loadCatalog(od);
-        }, { once: true });
-      }
-      return;
-    }
+    this.onBridge(() => {
+      this.fetchCatalog(od);
+    });
+  }
 
+  /**
+   * Odpala kod, gdy most jest gotowy — od razu albo za chwilę.
+   *
+   * Most dokłada się po załadowaniu dokumentu, a ten kod biegnie wcześniej.
+   * Bez czekania pierwsze zapytanie przepada i aplikacja zostaje na danych
+   * z pliku do końca sesji.
+   */
+  onBridge(fn) {
+    if (window.TAPI && window.TAPI.call) { fn(); return; }
+    window.addEventListener('tapi:ready', fn, { once: true });
+  }
+
+  fetchCatalog(od) {
     window.TAPI.call('db.venues', od || {}).then((r) => {
       if (!r || r.error || !r.venues || !r.venues.length) return;
       this.venues = r.venues;
@@ -496,11 +500,38 @@ class Component extends DCLogic {
     }).catch(() => {});
   }
 
+  /**
+   * Sesja z poprzedniego uruchomienia.
+   *
+   * Supabase trzyma ją na urządzeniu, więc konto jest dalej zalogowane po
+   * zamknięciu aplikacji — tylko widok o tym nie wiedział i za każdym razem
+   * witał ekranem logowania. Pytamy raz, przy starcie.
+   */
+  restoreSession() {
+    this.onBridge(() => {
+      window.TAPI.call('auth.session').then((r) => {
+        const u = r && r.user;
+        if (!u) return;
+        this.setState({
+          user: { name: u.name || u.email || 'Gość', mail: u.email || '' },
+          mailAddr: u.email || '',
+          bizAccount: !!u.isBusiness
+        });
+      }).catch(() => {});
+    });
+  }
+
   componentDidMount() {
     const d = this.detectLang();
     if (d !== 'pl') this.setState({ lang: d, langAuto: d });
     this.loadCatalog();
-    this.splashT = setTimeout(() => this.setState({ phase: 'auth' }), 2150);
+    this.restoreSession();
+    // Po ekranie startowym: kto ma sesję, ten wchodzi prosto do aplikacji.
+    // Pokazywanie logowania komuś, kto jest zalogowany, to najkrótsza droga
+    // do wrażenia, że aplikacja gubi konto.
+    this.splashT = setTimeout(() => this.setState((s) => (
+      s.user ? { phase: 'app', entered: true } : { phase: 'auth' }
+    )), 2150);
     this.tick = setInterval(() => {
       if (this.state.coupon && this.state.secs > 0) this.setState((s) => ({ secs: s.secs - 1 }));
     }, 1000);
@@ -745,7 +776,16 @@ class Component extends DCLogic {
   keyTap(ch) {
     if (ch === 'del') { this.setState({ code: this.state.code.slice(0, -1) }); return; }
     if (ch === 'ok') { if (this.state.code.length === 6) this.verify(); return; }
-    const code = (this.state.code + ch).slice(0, 4);
+    // Kod logowania ma sześć cyfr — tyle wysyła Supabase i tyle jest okienek
+    // na ekranie. Obcięcie do czterech sprawiało, że warunek niżej nigdy się
+    // nie spełniał: klawiatura przyjmowała cyfry i nie dawało się zalogować.
+    // Osobna sprawa to czterocyfrowy kod kuponu — ten zostaje bez zmian.
+    //
+    // Pełnego kodu nie dopisujemy. Bez tego siódme naciśnięcie wysyłało kod
+    // drugi raz, a Supabase unieważnia go po pierwszym użyciu — na udane
+    // logowanie wskakiwał komunikat o błędzie.
+    if (this.state.code.length >= 6) return;
+    const code = (this.state.code + ch).slice(0, 6);
     this.setState({ code: code });
     if (code.length === 6) setTimeout(() => this.verify(), 240);
   }
@@ -1412,7 +1452,7 @@ class Component extends DCLogic {
     "Zabłocie · 3 places came out of the fog.": "Zabłocie · 3 posti sono usciti dalla nebbia.",
     "Guide to venues and events": "Guida a locali ed eventi",
     "Browsing as a guest. Sign in whenever you want coupons.": "Stai esplorando come ospite. Accedi quando vorrai i coupon.",
-    "We sent 4 digits to ": "Abbiamo inviato 4 cifre a ",
+    "We sent 6 digits to ": "Abbiamo inviato 6 cifre a ",
     "Recenter": "Ricentra",
     "Scanned": "Scansionato",
     "Show this code at the bar": "Mostra questo codice al bancone",
@@ -1690,7 +1730,7 @@ class Component extends DCLogic {
   };
 
   itRules = [
-    [/^We sent 4 digits to (.+)$/, 'Abbiamo inviato 4 cifre a $1'],
+    [/^We sent 6 digits to (.+)$/, 'Abbiamo inviato 6 cifre a $1'],
     [/^Results · (\d+)$/, 'Risultati · $1'],
     [/^Your interests: (.+)$/, function (m, a) { return 'I tuoi interessi: ' + a.split(', ').map((x) => this.trStr(x)).join(', '); }],
     [/^Turn on alerts \((\d+)\)$/, 'Attiva le notifiche ($1)'],
@@ -2002,7 +2042,7 @@ class Component extends DCLogic {
             .then((r) => { if (r && r.error) this.toast(r.error); })
             .catch((e) => this.toast(String(e.message || e)));
         } },
-      codeHint: (st.lang === 'pl' ? 'Wysłaliśmy 4 cyfry na ' : 'We sent 4 digits to ') + (st.mailAddr || 'ty@tapi.app'),
+      codeHint: (st.lang === 'pl' ? 'Wysłaliśmy 6 cyfr na ' : 'We sent 6 digits to ') + (st.mailAddr || 'ty@tapi.app'),
       codeCells: [0, 1, 2, 3, 4, 5].map((i) => ({ ch: st.code[i] || '', border: st.code.length === i ? at : th.hair })),
       keypad: ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'ok'].map((k) => ({
         label: k === 'del' ? '←' : (k === 'ok' ? '✓' : k),
@@ -2406,6 +2446,12 @@ class Component extends DCLogic {
         if ((st.delTyped || '').trim().toUpperCase() !== this.l3('USUŃ', 'DELETE', 'ELIMINA')) { this.buzz([0, 8, 60, 8]); return; }
         this.buzz([0, 18]);
         this.setState({ delAcc: null, delTyped: '', user: null, coupon: null, savedIds: [], following: [], profTab: 'saved' });
+        // UWAGA: to na razie tylko wylogowanie. Konto zostaje w bazie.
+        // Prawdziwe usunięcie wymaga funkcji brzegowej z kluczem serwisowym
+        // (telefon nie ma prawa kasować kont) oraz znacznika na trzydzieści
+        // dni, bo ekran obiecuje możliwość powrotu. Do czasu jej napisania
+        // ten przycisk mówi więcej, niż robi.
+        this.onBridge(() => { window.TAPI.call('auth.signOut').catch(() => {}); });
         this.toast(this.l3('Konto usunięte. Przykro nam, że odchodzisz.', 'Account deleted. Sorry to see you go.', 'Account eliminato. Ci dispiace vederti andare.'));
       },
 
@@ -3177,7 +3223,13 @@ bizEditMode: false,
       bizCategory: 'apartments',
       bizLivePreview: false, bizCategory: 'apartments', bizLivePreview: false }),
       delEntry: this.l3('Usuń konto', 'Delete account', 'Elimina account'),
-      logout: () => { this.buzz(10); this.setState({ user: null, coupon: null }); this.toast(st.lang === 'pl' ? 'Wylogowano.' : 'Signed out.'); },
+      // Wylogowanie musi dojść do bazy, nie tylko zniknąć z ekranu. Bez tego
+      // sesja zostaje na urządzeniu i wraca przy następnym uruchomieniu —
+      // ktoś, kto oddaje telefon, oddawałby razem z kontem.
+      logout: () => { this.buzz(10);
+        this.setState({ user: null, coupon: null, bizAccount: false });
+        this.onBridge(() => { window.TAPI.call('auth.signOut').catch(() => {}); });
+        this.toast(st.lang === 'pl' ? 'Wylogowano.' : 'Signed out.'); },
       langOpts: [{ id: 'pl', label: 'Polski' }, { id: 'en', label: 'English' }, { id: 'it', label: 'Italiano' }].map((l) => ({
         label: l.label, bg: st.lang === l.id ? th.ink : 'transparent', fg: st.lang === l.id ? th.paper : th.sub,
         pick: () => this.setState({ lang: l.id }) })),
