@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -20,6 +20,7 @@ import { ScreenHost } from './src/nav/ScreenHost';
 import { Avatar } from './src/nav/Avatar';
 import { Dismissable } from './src/nav/Dismissable';
 import { cue, useFeedbackWarmUp } from './src/ui/feedback';
+import { ErrorBoundary } from './src/ui/ErrorBoundary';
 import { type Tab } from './src/nav/routes';
 import { Splash } from './src/screens/Splash';
 import { Auth } from './src/screens/Auth';
@@ -32,7 +33,12 @@ import { MapScreen } from './src/screens/MapScreen';
 import { Trip } from './src/screens/Trip';
 import { Placeholder } from './src/screens/Placeholder';
 import { Prototype } from './src/screens/Prototype';
-import { SmartStand } from './src/screens/SmartStand';
+// three i React Three Fiber wchodzą dopiero, gdy ktoś otwiera stojak.
+// Statyczny import ładował je przy starcie aplikacji, spowalniając wejście
+// i rozszerzając powierzchnię awarii na ekran, którego nikt nie ogląda.
+const SmartStand = lazy(() =>
+  import('./src/screens/SmartStand').then((m) => ({ default: m.SmartStand })),
+);
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -59,7 +65,9 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <I18nProvider>
-          {MODE === 'prototype' ? <Prototype /> : MODE === 'stand' ? <StandOnly /> : <Shell />}
+          <ErrorBoundary>
+            {MODE === 'prototype' ? <Prototype /> : MODE === 'stand' ? <StandOnly /> : <Shell />}
+          </ErrorBoundary>
         </I18nProvider>
       </ThemeProvider>
     </SafeAreaProvider>
@@ -78,13 +86,35 @@ export default function App() {
  */
 const MODE: 'prototype' | 'native' | 'stand' = 'prototype';
 
+/**
+ * Ekran ładowany na żądanie potrzebuje czegoś na czas wczytywania paczki.
+ * Bez tego React wyrzuca wyjątek o brakującej granicy `Suspense`, a gość
+ * widzi pustkę zamiast informacji, że coś się dzieje.
+ */
+function LazyScreen({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme();
+  return (
+    <Suspense
+      fallback={
+        <View style={[styles.root, styles.center, { backgroundColor: theme.paper }]}>
+          <ActivityIndicator color={theme.dark ? '#57C39F' : '#1F5A46'} />
+        </View>
+      }
+    >
+      {children}
+    </Suspense>
+  );
+}
+
 /** Konfigurator stojaka bez paska nawigacji — do obejrzenia modelu. */
 function StandOnly() {
   const { theme } = useTheme();
   return (
     <View style={[styles.root, { backgroundColor: theme.paper }]}>
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
-      <SmartStand />
+      <LazyScreen>
+        <SmartStand />
+      </LazyScreen>
     </View>
   );
 }
@@ -144,7 +174,9 @@ function Shell() {
     if (stand)
       return (
         <Dismissable onClose={() => setStand(false)}>
-          <SmartStand />
+          <LazyScreen>
+            <SmartStand />
+          </LazyScreen>
         </Dismissable>
       );
     if (planner)
@@ -196,4 +228,5 @@ function Shell() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  center: { alignItems: 'center', justifyContent: 'center' },
 });

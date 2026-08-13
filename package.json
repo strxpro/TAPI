@@ -33,7 +33,7 @@
     "react-native-svg": "15.12.1",
     "react-native-url-polyfill": "^4.0.0",
     "react-native-webview": "13.15.0",
-    "three": "^0.185.1"
+    "three": "0.185.1"
   },
   "devDependencies": {
     "@babel/plugin-transform-class-static-block": "^8.0.1",
@@ -54,5 +54,8 @@
     "app:watch": "node tools/build-app.mjs --watch",
     "unpack": "node tools/unpack-design.mjs"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "three": "$three"
+  }
 }
