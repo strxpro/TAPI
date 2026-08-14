@@ -84,15 +84,41 @@ async function build() {
   const doc = shell
     // Biblioteki wchodzą do środka zamiast odwołania do pliku.
     .replace(/<script src="vendor\/dc-runtime\.js"><\/script>/, () => scripts.trim())
-    .replace('<!-- STYLES -->', () => `<style>\n${css}\n</style>`)
     .replace('<!-- TEMPLATE -->', () => template)
     .replace(
       '<!-- LOGIC -->',
       () => `<script type="text/x-dc" data-dc-script="" data-props="${attr}">\n${logic}\n</script>`,
     );
 
-  // Gdy w szkielecie nie było znacznika stylów, dokładamy je do nagłówka.
-  const withCss = doc.includes('<style>') ? doc : doc.replace('</head>', () => `<style>\n${css}\n</style>\n</head>`);
+  /**
+   * Arkusz wchodzi na końcu, w miejsce `<!-- STYLES -->` w `<helmet>` szablonu.
+   *
+   * Kolejność jest tu całym sednem. Wcześniej podstawienie stylów biegło
+   * w tym samym łańcuchu **przed** wstawieniem szablonu — a znacznik siedzi
+   * właśnie w szablonie, więc nie było czego zamienić. Dalej stał warunek
+   * „czy dokument ma jakikolwiek <style>"; szablon ma własny, czterowierszowy
+   * blok, więc warunek wychodził prawdziwy i **cały arkusz po cichu wypadał**.
+   *
+   * Aplikacja wyglądała przez to prawie dobrze — style leżą w atrybutach —
+   * ale arkusz niesie czcionki i wszystkie `@keyframes`. Żadna animacja
+   * w aplikacji nie działała, łącznie z rysowaniem logo na ekranie startowym,
+   * a napisy szły krojem systemowym zamiast Archivo i Plus Jakarta Sans.
+   *
+   * Bez cichej ścieżki zapasowej: lepiej, żeby budowanie stanęło z komunikatem,
+   * niż żeby znów „poradziło sobie" i nikt tego nie zauważył.
+   */
+  if (!doc.includes('<!-- STYLES -->')) {
+    throw new Error('brak znacznika <!-- STYLES --> w <helmet> szablonu — nie ma gdzie wstawić arkusza.');
+  }
+  const withCss = doc.replace('<!-- STYLES -->', () => `<style>\n${css}\n</style>`);
+
+  // Sprawdzenie zamiast zaufania — bez niego ta sama pomyłka wróci niezauważona.
+  const brakuje = ['@font-face', '@keyframes rise', '@keyframes dashIn'].filter(
+    (s) => !withCss.includes(s),
+  );
+  if (brakuje.length) {
+    throw new Error(`arkusz trafił niekompletny — brakuje: ${brakuje.join(', ')}.`);
+  }
 
   await mkdir(dirname(OUT), { recursive: true });
   await writeFile(OUT, withCss, 'utf8');

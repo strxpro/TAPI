@@ -4,6 +4,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 <script src="vendor/dc-runtime.js"></script>
+<!-- STYLES — arkusz musi być tutaj, w <head>, a nie w <helmet> szablonu.
+     Runtime przenosi <helmet> do nagłówka dopiero po pierwszym rysowaniu,
+     a wtedy ekran startowy już powstał: jego animacje nie znajdują swoich
+     @keyframes, więc przepadają i logo stoi nieruchomo. -->
+<!-- STYLES -->
 </head>
 <body>
 <x-dc>
