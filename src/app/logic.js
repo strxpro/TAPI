@@ -807,6 +807,92 @@ class Component extends DCLogic {
     }).catch((e) => { this.setState({ mailStep: 'code', code: '' }); this.toast(String(e.message || e)); });
   }
 
+  /* ══ RELACJE ══ */
+
+  /** Ile trwa jedna relacja, zanim przeskoczy dalej. */
+  STORY_MS = 5000;
+
+  openStories(venueId, ix) {
+    const v = (this.venues || []).filter((x) => x.id === venueId)[0];
+    if (!v || !v.stories || !v.stories.length) return;
+    this.buzz(10);
+    this.setState({ storyOf: venueId, storyIx: ix || 0, storyStep: 0 });
+    this.runStory(venueId, ix || 0);
+  }
+
+  /**
+   * Odlicza czas bieżącej relacji.
+   *
+   * `storyStep` rośnie z każdym przejściem i steruje wyłącznie tym, którą
+   * z dwóch bliźniaczych animacji dostaje pasek. Bez tej zmiany przeglądarka
+   * nie uruchamia animacji od nowa i pasek stoi pełny.
+   */
+  /**
+   * Odlicza czas relacji i zapisuje odsłonę.
+   *
+   * Lokal i numer relacji dostaje wprost, a nie ze stanu. `setState` nie
+   * wchodzi w życie natychmiast, więc odczyt stanu tuż po jego ustawieniu
+   * pokazałby jeszcze poprzednią relację — i licznik odsłon liczyłby nie tę,
+   * co trzeba.
+   */
+  runStory(venueId, ix) {
+    clearTimeout(this.storyT);
+    this.storyT = setTimeout(() => this.nextStory(), this.STORY_MS);
+
+    const v = (this.venues || []).filter((x) => x.id === venueId)[0];
+    const s = v && v.stories && v.stories[ix];
+    const id = s && s[2];
+    // Dane testowe mają krotki dwuelementowe — wtedy nie ma czego zapisywać.
+    if (!id) return;
+    this.onBridge(() => { window.TAPI.call('stories.seen', { id: id }).catch(() => {}); });
+  }
+
+  nextStory() {
+    const v = (this.venues || []).filter((x) => x.id === this.state.storyOf)[0];
+    if (!v) { this.closeStories(); return; }
+    const ix = (this.state.storyIx || 0) + 1;
+    // Koniec relacji tego lokalu to koniec oglądania. Przeskakiwanie do
+    // następnego lokalu bez pytania byłoby zaskoczeniem, nie ułatwieniem.
+    if (ix >= v.stories.length) { this.closeStories(); return; }
+    this.setState((s) => ({ storyIx: ix, storyStep: (s.storyStep || 0) + 1 }));
+    this.runStory(v.id, ix);
+  }
+
+  prevStory() {
+    const ix = (this.state.storyIx || 0) - 1;
+    if (ix < 0) { this.runStory(this.state.storyOf, 0); return; }
+    this.buzz(8);
+    this.setState((s) => ({ storyIx: ix, storyStep: (s.storyStep || 0) + 1 }));
+    this.runStory(this.state.storyOf, ix);
+  }
+
+  /** Przytrzymanie zatrzymuje odliczanie — chce się doczytać, nie gonić. */
+  storyHold() {
+    clearTimeout(this.storyT);
+    this.storyHeldAt = Date.now();
+    this.setState({ storyPaused: true });
+  }
+
+  storyRelease() {
+    if (!this.state.storyPaused) return;
+    // Jednym `setState` i przez funkcję: dwa osobne wywołania mogą trafić do
+    // tej samej paczki, a wtedy drugie czyta jeszcze stary licznik kroków
+    // i pasek nie ruszy od nowa.
+    //
+    // Po puszczeniu palca pasek startuje od zera. Doliczanie resztki
+    // wymagałoby zatrzymania animacji CSS dokładnie w tym samym miejscu —
+    // nieproporcjonalnie dużo zachodu jak na pięć sekund.
+    this.setState((s) => ({ storyPaused: false, storyStep: (s.storyStep || 0) + 1 }));
+    clearTimeout(this.storyT);
+    this.storyT = setTimeout(() => this.nextStory(), this.STORY_MS);
+  }
+
+  closeStories() {
+    clearTimeout(this.storyT);
+    this.buzz(8);
+    this.setState({ storyOf: null, storyIx: 0, storyPaused: false });
+  }
+
   openVenue(id, scanned) {
     this.buzz(8);
     this.setState({ tab: 'venue', venue: id, scanned: !!scanned, redeem: 0, loading: false });
@@ -2979,7 +3065,8 @@ class Component extends DCLogic {
         this.setState({ myRevs: next, revDraft: '', revSort: 'new', revFilter: 0, revSortOpen: false });
         this.toast(PL ? 'Opinia dodana — dzięki!' : 'Review added — thank you!');
       },
-      vStories: v.stories.map((s, i) => ({ title: this.dt(s[0]), when: this.dt(s[1]), delay: (i * 60) + 'ms', grad: v.grad })),
+      vStories: v.stories.map((s, i) => ({ title: this.dt(s[0]), when: this.dt(s[1]), delay: (i * 60) + 'ms', grad: v.grad,
+        open: () => this.openStories(v.id, i) })),
       partnersTitle: PL ? 'Polecane obok' : 'Recommended nearby',
       partnersKicker: PL ? 'OD ' + v.name.toUpperCase() : 'FROM ' + v.name.toUpperCase(),
       partnersNote: PL ? 'Lokale, które ' + v.name + ' poleca gościom. Wszystkie mają konto w TAPI, więc kupon odbierzesz tak samo.' : v.name + ' recommends these to its guests. All are on TAPI, so coupons work the same.',
@@ -3877,6 +3964,38 @@ bizEditMode: false,
       tBizLoginTab: this.l3('Zaloguj się', 'Sign in', 'Accedi'),
       tBizRegisterTab: this.l3('Zarejestruj lokal', 'Register venue', 'Registra locale'),
       loginBizDirect: () => this.setState({ phase: 'biz', biz: 'panel', bizAccount: true }),
+      /* ══ ODTWARZACZ RELACJI ══ */
+      ...(() => {
+        const sv = (this.venues || []).filter((x) => x.id === st.storyOf)[0];
+        const lista = (sv && sv.stories) || [];
+        const ix = Math.min(st.storyIx || 0, Math.max(0, lista.length - 1));
+        const teraz = lista[ix] || ['', ''];
+        return {
+          storyOpen: !!sv && lista.length > 0,
+          sPlayGrad: sv ? sv.grad : 'transparent',
+          storyVenue: sv ? sv.name : '',
+          storyWhen: this.dt(teraz[1] || ''),
+          storyKicker: sv ? (this.dt(sv.catLabel) + ' · ' + sv.district) : '',
+          storyTitle: this.dt(teraz[0] || ''),
+          storyBars: lista.map((s, i) => ({
+            // Obejrzane stoją pełne, przyszłe puste, bieżący biegnie.
+            // Nazwa animacji przełącza się co krok, bo przeglądarka nie
+            // uruchamia od nowa animacji o tej samej nazwie.
+            w: i < ix ? '100%' : '0',
+            anim: i === ix
+              ? ((st.storyStep || 0) % 2 === 0 ? 'storyFillA' : 'storyFillB') +
+                ' ' + (this.STORY_MS / 1000) + 's linear forwards' +
+                (st.storyPaused ? ' paused' : '')
+              : 'none',
+          })),
+          closeStories: () => this.closeStories(),
+          nextStory: () => this.nextStory(),
+          prevStory: () => this.prevStory(),
+          storyHold: () => this.storyHold(),
+          storyRelease: () => this.storyRelease(),
+        };
+      })(),
+
       openFriendsHub: () => this.setState({ friendsOpen: true }),
       closeFriendsHub: () => this.setState({ friendsOpen: false }),
       setFriendsTabRanking: () => this.setState({ friendsTab: 'ranking' }),

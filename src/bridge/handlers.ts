@@ -118,13 +118,13 @@ const dbVenues: Handler = async (p) => {
   // wyłącznie te, które akurat trwają.
   const { data: stories } = await supabase
     .from('stories')
-    .select('venue_id, title, body')
+    .select('id, venue_id, title, body')
     .order('published_at', { ascending: false });
 
-  const wgLokalu = new Map<string, Array<{ title: string | null; body: string | null }>>();
+  const wgLokalu = new Map<string, Array<{ id: string; title: string | null; body: string | null }>>();
   for (const s of stories ?? []) {
     const lista = wgLokalu.get(s.venue_id) ?? [];
-    lista.push({ title: s.title, body: s.body });
+    lista.push({ id: s.id, title: s.title, body: s.body });
     wgLokalu.set(s.venue_id, lista);
   }
 
@@ -183,6 +183,25 @@ const dbToggleSaved: Handler = async (p) => {
   }
   await supabase.from('saved_venues').insert({ user_id: u.user.id, venue_id: venueId });
   return { saved: true };
+};
+
+/* ────────────────────────────────────────────────────────────── relacje ── */
+
+/**
+ * Odsłona relacji.
+ *
+ * Licznika w `stories` nie da się oddać do zapisu gościom — podnieśliby też
+ * cudze. Robi to funkcja w bazie, która najpierw zapisuje, kto obejrzał,
+ * i podbija licznik wyłącznie przy pierwszym obejrzeniu.
+ *
+ * Cisza przy niepowodzeniu jest tu zamierzona: nikt nie ogląda relacji po to,
+ * żeby dowiedzieć się, że licznik nie zadziałał.
+ */
+const storiesSeen: Handler = async (p) => {
+  const id = str(p.id);
+  if (!id || !hasBackend) return { ok: false };
+  const { error } = await supabase.rpc('mark_story_seen', { story: id });
+  return { ok: !error };
 };
 
 /* ────────────────────────────────────────────────────── pokoje wieczoru ── */
@@ -289,6 +308,8 @@ export const HANDLERS: Record<string, Handler> = {
   'db.venues': dbVenues,
   'db.events': dbEvents,
   'db.toggleSaved': dbToggleSaved,
+
+  'stories.seen': storiesSeen,
 
   'rooms.join': roomsJoin,
   'rooms.mine': roomsMine,

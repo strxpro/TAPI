@@ -773,6 +773,7 @@
           </div>
           </sc-if>
         </div>
+
         <!-- FULL SCREEN FRIENDS HUB MODAL -->
         <sc-if value="{{ friendsOpen }}">
         <div style="position: fixed; inset: 0; z-index: 99999; background: var(--paper, #F4F2ED); display: flex; flex-direction: column; animation: slideUp 0.4s cubic-bezier(0.16,1,0.3,1) both;">
@@ -1066,7 +1067,7 @@
           </div>
           <div style="display: flex; gap: 9px; overflow-x: auto; margin: 11px -16px 0; padding: 0 16px 4px;" data-noswipe="1">
             <sc-for list="{{ vStories }}" as="s" hint-placeholder-count="3">
-              <div style="flex-shrink: 0; width: 104px; border-radius: 14px; overflow: hidden; border: 1px solid var(--hair, rgba(22,24,28,0.1)); animation: rise 0.45s cubic-bezier(0.16,1,0.3,1) both; animation-delay: {{ s.delay }};">
+              <div sc-camel-on-click="{{ s.open }}" style="flex-shrink: 0; width: 104px; border-radius: 14px; overflow: hidden; cursor: pointer; border: 1px solid var(--hair, rgba(22,24,28,0.1)); animation: rise 0.45s cubic-bezier(0.16,1,0.3,1) both; animation-delay: {{ s.delay }};">
                 <div style="height: 132px; position: relative; background: {{ s.grad }};">
                   <div style="position: absolute; top: 8px; left: 8px; right: 8px; height: 2px; border-radius: 2px; background: rgba(255,255,255,0.5); overflow: hidden;"><div style="height: 100%; width: 60%; background: #FFF;"></div></div>
                   <div style="position: absolute; bottom: 8px; left: 8px; padding: 3px 7px; border-radius: 5px; background: rgba(22,24,28,0.7); font-size: 9px; color: #F4F2ED;">{{ s.when }}</div>
@@ -4708,6 +4709,40 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ODTWARZACZ RELACJI -->
+      <sc-if value="{{ storyOpen }}">
+      <div sc-camel-on-pointer-down="{{ storyHold }}" sc-camel-on-pointer-up="{{ storyRelease }}" sc-camel-on-pointer-cancel="{{ storyRelease }}" style="position: fixed; inset: 0; z-index: 100000; background: #0B0C0E; display: flex; flex-direction: column; animation: fadeIn 0.24s ease both;">
+        <div style="display: flex; gap: 4px; padding: 52px 12px 0;">
+          <sc-for list="{{ storyBars }}" as="b" hint-placeholder-count="3">
+            <div style="flex: 1; height: 2.5px; border-radius: 2px; background: rgba(255,255,255,0.26); overflow: hidden;">
+              <div style="height: 100%; background: #FFF; width: {{ b.w }}; animation: {{ b.anim }};"></div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; padding: 15px 15px 0;">
+          <div style="width: 34px; height: 34px; border-radius: 17px; flex-shrink: 0; background: {{ sPlayGrad }};"></div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 13px; font-weight: 600; color: #F4F2ED; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ storyVenue }}</div>
+            <div style="font-size: 11px; color: rgba(244,242,237,0.58); margin-top: 1px;">{{ storyWhen }}</div>
+          </div>
+          <div sc-camel-on-click="{{ closeStories }}" style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <svg width="17" height="17" sc-camel-view-box="0 0 24 24" fill="none" stroke="#F4F2ED" stroke-width="2.3"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+          </div>
+        </div>
+
+        <div style="flex: 1; position: relative; margin: 14px 12px 20px; border-radius: 24px; overflow: hidden; background: {{ sPlayGrad }};">
+          <div style="position: absolute; inset: 0; background: linear-gradient(transparent 42%, rgba(11,12,14,0.76));"></div>
+          <div style="position: absolute; left: 22px; right: 22px; bottom: 26px; color: #F4F2ED;">
+            <div style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.78;">{{ storyKicker }}</div>
+            <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 29px; line-height: 1.08; letter-spacing: -0.025em; margin-top: 9px;">{{ storyTitle }}</div>
+          </div>
+          <div sc-camel-on-click="{{ prevStory }}" style="position: absolute; top: 0; left: 0; bottom: 0; width: 30%; cursor: pointer;"></div>
+          <div sc-camel-on-click="{{ nextStory }}" style="position: absolute; top: 0; right: 0; bottom: 0; width: 70%; cursor: pointer;"></div>
         </div>
       </div>
       </sc-if>

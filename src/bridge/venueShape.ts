@@ -115,7 +115,7 @@ export function gradient(kolory: string[] | null | undefined): string {
 
 export function naWidok(
   row: Row,
-  relacje: Array<{ title: string | null; body: string | null }>,
+  relacje: Array<{ id?: string; title: string | null; body: string | null }>,
   od: Punkt | null,
 ): Row {
   const { isOpen, closes } = czyOtwarte(row.hours);
@@ -153,7 +153,11 @@ export function naWidok(
     opinions: ((row.opinions ?? []) as Array<{ author: string; stars: number; text: string }>).map(
       (o) => [o.author, o.stars, o.text],
     ),
-    stories: relacje.map((s) => [s.title ?? '', s.body ?? '']),
+    // Trzeci element to identyfikator relacji — widok czyta tylko dwa
+    // pierwsze, a odtwarzacz potrzebuje go do zapisania odsłony. Dane
+    // testowe mają krotki dwuelementowe i to nadal działa: wtedy po prostu
+    // nie ma czego zapisywać.
+    stories: relacje.map((s) => [s.title ?? '', s.body ?? '', s.id ?? null]),
   };
 }
 
