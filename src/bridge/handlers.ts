@@ -204,6 +204,88 @@ const storiesSeen: Handler = async (p) => {
   return { ok: !error };
 };
 
+/** Lokal prowadzony przez zalogowane konto. Bez niego nie ma co publikować. */
+async function mojLokal() {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return { error: 'Trzeba być zalogowanym' as const };
+  const { data } = await supabase
+    .from('venues')
+    .select('id, name')
+    .eq('owner_id', u.user.id)
+    .limit(1)
+    .maybeSingle();
+  if (!data) return { error: 'Nie widzę lokalu przypisanego do tego konta' as const };
+  return { venue: data, userId: u.user.id };
+}
+
+/**
+ * Publikacja relacji przez panel firmy.
+ *
+ * Czas życia podaje lokal — doba to domyślna, ale zapowiedź wydarzenia
+ * za tydzień nie ma sensu gasnąć jutro rano.
+ *
+ * Do którego lokalu trafia, ustala serwer po właścicielu konta, a nie strona.
+ * Gdyby identyfikator przychodził z ekranu, dałoby się nim podstawić cudzy —
+ * RLS by to odrzuciło, ale lepiej nie budować drogi, którą trzeba zamykać.
+ */
+const storiesPublish: Handler = async (p) => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+
+  const title = str(p.title).trim();
+  if (title.length < 3) return { error: 'Napisz, co ogłaszasz' };
+
+  const moj = await mojLokal();
+  if ('error' in moj) return { error: moj.error };
+
+  const godzin = Math.min(Math.max(num(p.hours, 24), 1), 24 * 30);
+  const { data, error } = await supabase
+    .from('stories')
+    .insert({
+      venue_id: moj.venue.id,
+      kind: str(p.kind, 'offer'),
+      title,
+      body: str(p.body) || null,
+      created_by: moj.userId,
+      expires_at: new Date(Date.now() + godzin * 3600_000).toISOString(),
+    })
+    .select('id, title, expires_at')
+    .single();
+
+  return error ? { error: error.message } : { story: data, venue: moj.venue.name };
+};
+
+/** Relacje lokalu, także wygasłe — właściciel widzi swoje archiwum. */
+const storiesMine: Handler = async () => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+  const moj = await mojLokal();
+  if ('error' in moj) return { error: moj.error };
+
+  const { data, error } = await supabase
+    .from('stories')
+    .select('id, title, body, views, published_at, expires_at')
+    .eq('venue_id', moj.venue.id)
+    .order('published_at', { ascending: false })
+    .limit(30);
+  if (error) return { error: error.message };
+
+  const teraz = Date.now();
+  return {
+    stories: (data ?? []).map((s) => ({
+      id: s.id,
+      title: s.title,
+      body: s.body,
+      views: s.views,
+      live: new Date(s.expires_at).getTime() > teraz,
+    })),
+  };
+};
+
+const storiesRemove: Handler = async (p) => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+  const { error } = await supabase.from('stories').delete().eq('id', str(p.id));
+  return error ? { error: error.message } : { ok: true };
+};
+
 /* ────────────────────────────────────────────────────── pokoje wieczoru ── */
 
 const roomsJoin: Handler = async (p) => {
@@ -310,6 +392,9 @@ export const HANDLERS: Record<string, Handler> = {
   'db.toggleSaved': dbToggleSaved,
 
   'stories.seen': storiesSeen,
+  'stories.publish': storiesPublish,
+  'stories.mine': storiesMine,
+  'stories.remove': storiesRemove,
 
   'rooms.join': roomsJoin,
   'rooms.mine': roomsMine,

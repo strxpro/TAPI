@@ -10,15 +10,54 @@
       `0003_firmy_rezerwacje_relacje.sql`, nałożona i sprawdzona na żywej bazie
 - [x] **Blokada rezerwacji online bez danych do wypłat** — pilnuje baza, nie ekran
 
+- [x] **Lokale i wydarzenia z bazy** zamiast `MOCK` (który został jako zapas)
+- [x] **Logowanie kodem** — naprawione, patrz niżej
+- [x] **Odtwarzacz relacji** i publikowanie ich z panelu firmy
+- [x] **Arkusz stylów wraca do dokumentu** — animacje i czcionki znów działają
+
 ## 🟡 W trakcie
 
-- [ ] Podanie lokali z bazy do widoku zamiast `MOCK` (kształt danych się różni)
 - [ ] Krok 3: integracja kalendarzy (iCal / Booking / Google Calendar)
 - [ ] Krok 4: Stripe Connect — dziś w bazie jest miejsce na konto i saldo,
       ale nikt ich jeszcze nie wypełnia
 - [ ] Pulpit B2B: karty rezerwacji, saldo, przejęcie czatu od AI
-- [ ] Odtwarzacz relacji i dodawanie ich z panelu firmy
+- [ ] Usuwanie konta — przycisk obiecuje więcej, niż robi (patrz niżej)
+- [ ] Logowanie Google: most gotowy, ekran go nie woła
 - [ ] Powiadomienia push i webhooki
+
+---
+
+## Cztery błędy, które psuły rzeczy widoczne gołym okiem
+
+**Arkusz stylów nie trafiał do dokumentu.** Zero `@font-face`, zero
+`@keyframes`. Aplikacja wyglądała prawie dobrze, bo style siedzą w atrybutach,
+ale nie działała **żadna animacja** — rysowanie logo na starcie, wjazdy kart,
+dolne panele, toast — a napisy szły krojem systemowym zamiast Archivo
+i Plus Jakarta Sans. Przyczyna: podstawienie `<!-- STYLES -->` biegło przed
+wstawieniem szablonu, a znacznik siedział w szablonie. Zabezpieczenie sprawdzało
+„czy jest jakikolwiek `<style>`" — szablon ma własny, więc warunek wychodził
+prawdziwy i arkusz wypadał po cichu. Znacznik jest teraz w `<head>` szkieletu,
+a budowanie **staje z komunikatem**, gdy arkusz nie dojdzie.
+
+**Nie dało się zalogować.** Klawiatura kodu obcinała wpis do czterech znaków,
+a wysyłka wymagała sześciu — warunek nie mógł się spełnić nigdy. Drugie wejście,
+pole z podpowiedzią z wiadomości, wysyłało po czterech. Supabase przysyła sześć.
+Czterocyfrowy kod kuponu to osobna sprawa i został bez zmian.
+
+**Miesiąc wydarzenia był wpisany na sztywno** jako `SIE`. Na danych z pliku nikt
+tego nie widział, bo wszystkie były sierpniowe — wrześniowy koncert podpisałby
+się sierpniem.
+
+**Odległość „320 m" była ozdobą.** Prototyp pobierał pozycję GPS i ją wyrzucał.
+Teraz liczy się naprawdę, a bez zgody na lokalizację jest myślnik zamiast
+zmyślonej liczby.
+
+## Usuwanie konta mówi więcej, niż robi
+
+Przycisk pokazuje „konto usunięte" i obiecuje 30 dni na powrót. Na razie
+tylko wylogowuje — konto zostaje w bazie. Prawdziwe usunięcie wymaga funkcji
+brzegowej z kluczem serwisowym, bo telefon nie ma prawa kasować kont, oraz
+znacznika na trzydzieści dni. Jest to opisane w kodzie przy samym przycisku.
 
 ---
 

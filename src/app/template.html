@@ -217,7 +217,7 @@
               <div style="font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif; font-size: 30px; letter-spacing: -0.03em; margin-top: 8px;">{{ t.codeTitle }}</div>
               <div style="font-size: 12.5px; color: var(--sub, #6C6F75); margin-top: 7px;">Wpisz 4-cyfrowy kod, który wysłaliśmy na e-mail.</div>
               <div style="margin-top: 20px;">
-                <input type="text" pattern="[0-9]*" inputmode="numeric" autocomplete="one-time-code" maxlength="4" ref="{{ codeRef }}" sc-camel-on-input="{{ onCodeInput }}" placeholder="0000" style="width: 100%; text-align: center; letter-spacing: 0.5em; padding: 18px; border-radius: 16px; background: var(--surf, #FFF); border: 2px solid var(--hair, rgba(22,24,28,0.12)); outline: none; font-size: 28px; font-weight: 600; color: var(--ink, #16181C); transition: border-color 0.2s;">
+                <input type="text" pattern="[0-9]*" inputmode="numeric" autocomplete="one-time-code" maxlength="6" ref="{{ codeRef }}" sc-camel-on-input="{{ onCodeInput }}" placeholder="000000" style="width: 100%; text-align: center; letter-spacing: 0.5em; padding: 18px; border-radius: 16px; background: var(--surf, #FFF); border: 2px solid var(--hair, rgba(22,24,28,0.12)); outline: none; font-size: 28px; font-weight: 600; color: var(--ink, #16181C); transition: border-color 0.2s;">
               </div>
             </div>
           </sc-if>
@@ -3165,6 +3165,14 @@
                     <div style="flex: 1; min-width: 0; font-size: 12.5px; font-weight: 500;">{{ s.name }}</div>
                   </div>
                 </sc-for>
+                <input type="text" ref="{{ storyDraftRef }}" sc-camel-on-input="{{ onStoryDraft }}" placeholder="{{ storyDraftPh }}" maxlength="70" data-noswipe="1" style="width: 100%; margin-top: 2px; padding: 11px 12px; border-radius: 12px; background: var(--surf, #FFF); border: 1px solid var(--hair, rgba(22,24,28,0.14)); color: var(--ink, #16181C); font-size: 12.5px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none;">
+
+                <div style="display: flex; gap: 6px;">
+                  <sc-for list="{{ storyLifes }}" as="o" hint-placeholder-count="3">
+                    <div sc-camel-on-click="{{ o.pick }}" style="flex: 1; height: 30px; border-radius: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; background: {{ o.bg }}; color: {{ o.fg }}; border: 1px solid var(--hair, rgba(22,24,28,0.12)); transition: all 0.3s cubic-bezier(0.16,1,0.3,1);">{{ o.label }}</div>
+                  </sc-for>
+                </div>
+
                 <div sc-camel-on-click="{{ genStory }}" style="margin-top: auto; height: 46px; border-radius: 13px; cursor: pointer; background: var(--acc, #1F5A46); color: #FBFAF7; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12.5px; font-weight: 600;">
                   <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FBFAF7" stroke-width="2.2"><path d="M12 5v14M5 12h14"></path></svg>
                   <span>{{ genLabel }}</span>

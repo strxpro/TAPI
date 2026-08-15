@@ -809,6 +809,55 @@ class Component extends DCLogic {
 
   /* ══ RELACJE ══ */
 
+  storyDraftRef = React.createRef();
+
+  /**
+   * Publikacja relacji z panelu firmy.
+   *
+   * Wcześniej przycisk pokazywał komunikat „wysłaliśmy na twój Instagram"
+   * i nie robił nic — ani na Instagramie, ani w TAPI. Teraz zapisuje relację
+   * w bazie i po chwili widzą ją goście na wizytówce lokalu.
+   *
+   * Do którego lokalu trafia, ustala serwer po właścicielu konta. Strona nie
+   * podaje identyfikatora, więc nie ma czym podstawić cudzego.
+   */
+  publishStory() {
+    if (this.state.storyBusy) return;
+    const tresc = (this.state.storyDraft || '').trim();
+    if (tresc.length < 3) {
+      this.buzz([0, 8, 60, 8]);
+      this.toast(this.l3('Napisz, co ogłaszasz.', 'Say what you are announcing.', 'Scrivi cosa annunci.'));
+      return;
+    }
+
+    this.setState({ storyBusy: true });
+    this.buzz(12);
+
+    this.onBridge(() => {
+      window.TAPI.call('stories.publish', {
+        title: tresc,
+        kind: ['offer', 'event', 'offer'][this.state.storyTpl || 0],
+        hours: this.state.storyLife || 24
+      }).then((r) => {
+        this.setState({ storyBusy: false });
+        if (!r || r.error) {
+          this.toast((r && r.error) || this.l3('Nie udało się opublikować.', 'Could not publish.', 'Pubblicazione non riuscita.'));
+          return;
+        }
+        this.setState({ storyDraft: '' });
+        if (this.storyDraftRef.current) this.storyDraftRef.current.value = '';
+        this.buzz(16);
+        this.toast(this.l3('Relacja opublikowana. Goście już ją widzą.', 'Story published. Guests can see it now.', 'Storia pubblicata. Gli ospiti la vedono già.'));
+        // Katalog niesie relacje razem z lokalami, więc odświeżamy go,
+        // żeby świeża relacja pojawiła się także na wizytówce w tej sesji.
+        this.loadCatalog(this.geo);
+      }).catch((e) => {
+        this.setState({ storyBusy: false });
+        this.toast(String((e && e.message) || e));
+      });
+    });
+  }
+
   /** Ile trwa jedna relacja, zanim przeskoczy dalej. */
   STORY_MS = 5000;
 
@@ -2217,8 +2266,17 @@ class Component extends DCLogic {
       scanMenu: () => this.toast(st.lang === 'pl' ? 'Uruchamiam skaner menu z AI...' : 'Starting AI menu scanner...'),
       chartLabel: st.lang === 'pl' ? 'Skany · 7 dni' : 'Scans · 7 days',
       liveLabel: st.lang === 'pl' ? 'Na żywo' : 'Live',
-      storyHeadline: [st.lang === 'pl' ? 'Kieliszek frizzante gratis' : 'Free glass of frizzante', st.lang === 'pl' ? 'Winylowy czwartek, 23:30' : 'Vinyl Thursday, 11:30 pm', st.lang === 'pl' ? 'Karta jesienna od dziś' : 'Autumn menu from today'][st.storyTpl],
-      genLabel: st.lang === 'pl' ? 'Generuj relację' : 'Generate story',
+      // Podgląd pokazuje to, co lokal właśnie pisze. Dopóki pole jest puste,
+      // podpowiadamy przykładem pasującym do wybranego szablonu — ale to
+      // podpowiedź, nie treść: publikuje się wyłącznie to, co wpisane.
+      storyHeadline: (st.storyDraft || '').trim() || [
+        st.lang === 'pl' ? 'Kieliszek frizzante gratis' : 'Free glass of frizzante',
+        st.lang === 'pl' ? 'Winylowy czwartek, 23:30' : 'Vinyl Thursday, 11:30 pm',
+        st.lang === 'pl' ? 'Karta jesienna od dziś' : 'Autumn menu from today'
+      ][st.storyTpl || 0],
+      genLabel: st.storyBusy
+        ? (st.lang === 'pl' ? 'Publikuję…' : 'Publishing…')
+        : (st.lang === 'pl' ? 'Opublikuj relację' : 'Publish story'),
       stickerLabel: st.lang === 'pl' ? 'Naklejka na szybę' : 'Window sticker',
       stickerTitle: st.lang === 'pl' ? 'Twój kod wejściowy' : 'Your entry code',
       stickerCta: st.lang === 'pl' ? 'Pobierz PDF A5' : 'Download A5 PDF',
@@ -3297,12 +3355,18 @@ class Component extends DCLogic {
         this.buzz(10);
         this.toast(this.l3('Wybieranie zdjęcia z galerii...', 'Picking from gallery...', 'Scelta dalla galleria...'));
       },
+      /**
+       * Kod wklejony albo podpowiedziany przez telefon.
+       *
+       * To druga droga obok klawiatury i miała ten sam błąd: wysyłała po
+       * czterech znakach, a Supabase przysyła sześć. Podpowiedź z wiadomości
+       * bywa też ze spacją w środku, więc zostawiamy same cyfry.
+       */
       onCodeInput: (e) => {
-        const v = e.target.value;
+        const v = String(e.target.value || '').replace(/\D/g, '').slice(0, 6);
+        if (v !== e.target.value) e.target.value = v;
         this.setState({ code: v });
-        if (v.length === 4) {
-          this.verify();
-        }
+        if (v.length === 6) this.verify();
       },
       bizFromLogin: () => this.setState({ mail: null, gate: false, mailStep: 'mail', code: '',
         phase: 'biz', biz: 'flow', bizStep: 0, bizManual: false, bizVerify: 'idle',
@@ -3545,7 +3609,20 @@ bizEditMode: false,
       ].map((s, i) => ({ name: s.name, grad: s.grad, border: st.storyTpl === i ? at : th.hair,
         pick: () => this.setState({ storyTpl: i }) })),
       storyGrad: ['linear-gradient(160deg, #EAD6DE, #A8788C)', 'linear-gradient(160deg, #EFDDC4, #B67B4C)', 'linear-gradient(160deg, #DDE7D6, #6E9077)'][st.storyTpl],
-      genStory: () => this.toast(st.lang === 'pl' ? 'Relacja 1080×1920 gotowa — wysłaliśmy na twój Instagram.' : 'Story 1080×1920 ready — sent to your Instagram.'),
+      storyDraftRef: this.storyDraftRef,
+      storyDraftPh: st.lang === 'pl' ? 'Co ogłaszasz? Np. Winylowy czwartek, 23:30' : 'What are you announcing?',
+      onStoryDraft: (e) => this.setState({ storyDraft: e.target.value }),
+      // Ile relacja żyje. Doba pasuje do okazji na dziś, tydzień do
+      // zapowiedzi wydarzenia — gaśnięcie nazajutrz byłoby wtedy bez sensu.
+      storyLifes: [
+        { h: 24, label: st.lang === 'pl' ? 'doba' : '24 h' },
+        { h: 72, label: st.lang === 'pl' ? '3 dni' : '3 days' },
+        { h: 168, label: st.lang === 'pl' ? 'tydzień' : 'a week' }
+      ].map((o) => ({ label: o.label, on: (st.storyLife || 24) === o.h,
+        bg: (st.storyLife || 24) === o.h ? th.ink : th.surf,
+        fg: (st.storyLife || 24) === o.h ? th.paper : th.sub,
+        pick: () => this.setState({ storyLife: o.h }) })),
+      genStory: () => this.publishStory(),
       offers: [
         { id: 'happy', name: st.lang === 'pl' ? 'Kieliszek frizzante gratis' : 'Free glass of frizzante', meta: '18:00 – 20:00', taken: '124' },
         { id: 'story', name: st.lang === 'pl' ? 'Deska dla dwojga −25%' : 'Board for two −25%', meta: st.lang === 'pl' ? 'Weekendy' : 'Weekends', taken: '46' },
