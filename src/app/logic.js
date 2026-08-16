@@ -763,6 +763,7 @@ class Component extends DCLogic {
     // Oferty pobieramy przy wejściu w zakładkę, a nie przy starcie aplikacji:
     // gość, który nigdy nie otworzy panelu firmy, nie ma po co ich pobierać.
     if (id === 'stories') this.loadOffers();
+    if (id === 'home' || id === 'scans') this.loadBizStats();
     this.setState({ oTab: id, navDir: dir || (b > a ? 1 : -1), dragX: 0, swiped: false });
     clearTimeout(this.bFlyT);
     this.setState({ bizFly: [Math.min(a, b), Math.max(a, b)] });
@@ -833,6 +834,22 @@ class Component extends DCLogic {
    * Do którego lokalu trafia, ustala serwer po właścicielu konta. Strona nie
    * podaje identyfikatora, więc nie ma czym podstawić cudzego.
    */
+  /**
+   * Liczby do pulpitu firmy.
+   *
+   * Zero to prawidłowa odpowiedź — nowy lokal nie ma jeszcze skanów i lepiej,
+   * żeby zobaczył zero niż wymyślone „34". Napis pod wykresem mówi wtedy
+   * wprost, że nikt jeszcze nie zeskanował naklejki.
+   */
+  loadBizStats() {
+    this.onBridge(() => {
+      window.TAPI.call('biz.stats').then((r) => {
+        if (!r || r.error || !r.stats) return;
+        this.setState({ bizLive: r.stats });
+      }).catch(() => {});
+    });
+  }
+
   /** Oferty lokalu do panelu firmy. Woła się przy wejściu w zakładkę. */
   loadOffers() {
     this.onBridge(() => {
@@ -3614,20 +3631,41 @@ bizEditMode: false,
       ].map((o) => ({ label: o.label, bg: st.oTab === o.id ? th.ink : 'transparent', fg: st.oTab === o.id ? th.paper : th.sub,
         pick: () => this.setState({ oTab: o.id }) })),
       ownerTitle: st.oTab === 'home' ? (st.lang === 'pl' ? 'Dzisiaj u ciebie' : 'Today at your place') : (st.oTab === 'stories' ? (st.lang === 'pl' ? 'Relacje i wydarzenia' : 'Stories and events') : (st.lang === 'pl' ? 'Skany i naklejka' : 'Scans and sticker')),
-      kpis: [
-        { label: st.lang === 'pl' ? 'SKANY DZIŚ' : 'SCANS TODAY', value: '34', trend: '+18%', delay: '0ms' },
-        { label: st.lang === 'pl' ? 'KUPONY ODEBRANE' : 'COUPONS USED', value: '12', trend: '35%', delay: '70ms' },
-        { label: st.lang === 'pl' ? 'NOWI GOŚCIE' : 'NEW GUESTS', value: '9', trend: st.lang === 'pl' ? 'pierwsza wizyta' : 'first visit', delay: '140ms' },
-        { label: st.lang === 'pl' ? 'ŚREDNI RACHUNEK' : 'AVG. BILL', value: '86 zł', trend: '+11 zł', delay: '210ms' }
-      ],
-      bars: [['Pn', 38], ['Wt', 52], ['Śr', 44], ['Cz', 71], ['Pt', 96], ['So', 88], ['Nd', 61]].map((b, i) => ({
-        day: b[0], h: b[1] + '%', delay: (i * 60) + 'ms', bg: i === 4 ? at : th.hair })),
-      feed: [
-        { time: '18:12', text: st.lang === 'pl' ? 'Kupon NKT·4192 wykorzystany' : 'Coupon NKT·4192 used', delay: '0ms' },
-        { time: '17:48', text: st.lang === 'pl' ? 'Nowy skan — gość pierwszorazowy' : 'New scan — first-time guest', delay: '60ms' },
-        { time: '17:20', text: st.lang === 'pl' ? 'Ktoś zapisał was na później' : 'Someone saved you for later', delay: '120ms' },
-        { time: '16:55', text: st.lang === 'pl' ? 'Relacja opublikowana na IG' : 'Story published to IG', delay: '180ms' }
-      ],
+      // Liczby z bazy. Zamiast „średniego rachunku", którego TAPI nie widzi
+      // i nie ma z czego policzyć, idą przyznane punkty — te są prawdziwe.
+      kpis: (() => {
+        const s = st.bizLive || {};
+        return [
+          { label: st.lang === 'pl' ? 'SKANY DZIŚ' : 'SCANS TODAY', value: String(s.scansToday || 0),
+            trend: st.lang === 'pl' ? 'dzisiaj' : 'today' },
+          { label: st.lang === 'pl' ? 'KUPONY ODEBRANE' : 'COUPONS USED', value: String(s.couponsWeek || 0),
+            trend: st.lang === 'pl' ? '7 dni' : '7 days' },
+          { label: st.lang === 'pl' ? 'NOWI GOŚCIE' : 'NEW GUESTS', value: String(s.newGuests || 0),
+            trend: st.lang === 'pl' ? 'pierwsza wizyta' : 'first visit' },
+          { label: st.lang === 'pl' ? 'PRZYZNANE PUNKTY' : 'POINTS AWARDED', value: String(s.pointsWeek || 0),
+            trend: st.lang === 'pl' ? '7 dni' : '7 days' }
+        ].map((k, i) => Object.assign({ delay: (i * 70) + 'ms' }, k));
+      })(),
+      bars: (() => {
+        const dni = (st.bizLive && st.bizLive.days) || [];
+        if (!dni.length) return [];
+        // Skala względem najwyższego słupka — przy jednym skanie dziennie
+        // wykres i tak ma coś pokazać.
+        const max = Math.max.apply(null, dni.map((d) => d.n).concat([1]));
+        return dni.map((d, i) => ({ day: st.lang === 'pl' ? d.pl : d.en,
+          h: Math.max(4, Math.round((d.n / max) * 100)) + '%', delay: (i * 60) + 'ms',
+          bg: d.n === max && max > 0 ? at : th.hair }));
+      })(),
+      // Zdarzenia z bazy: godzina i rodzaj. Opis dokładamy tutaj, żeby
+      // tłumaczenie zostało w widoku, a baza oddawała same fakty.
+      feed: (((st.bizLive || {}).feed) || []).map((f, i) => ({
+        time: f.time, delay: (i * 60) + 'ms',
+        text: f.kind === 'coupon'
+          ? this.l3('Kupon wykorzystany', 'Coupon used', 'Coupon utilizzato')
+          : f.kind === 'story'
+            ? this.l3('Relacja opublikowana', 'Story published', 'Storia pubblicata')
+            : this.l3('Nowy skan naklejki', 'New sticker scan', 'Nuova scansione')
+      })),
       storyTpls: [
         { name: st.lang === 'pl' ? 'Okazja' : 'Deal', grad: 'linear-gradient(160deg, #EAD6DE, #A8788C)' },
         { name: st.lang === 'pl' ? 'Wydarzenie' : 'Event', grad: 'linear-gradient(160deg, #EFDDC4, #B67B4C)' },
@@ -3915,18 +3953,31 @@ bizEditMode: false,
           this.toast(PL ? p.name + ' dodany do twoich poleconych.' : p.name + ' added.'); } })),
       inboundEmpty: inb.length === 0,
       inboundEmptyText: PL ? 'Jeszcze nikt cię nie poleca. Poleć kogoś pierwszy — w praktyce większość odwzajemnia.' : 'Nobody recommends you yet. Recommend first — most reciprocate.',
-      bizStats: [
-        { pl: 'SKANY W TYM TYGODNIU', en: 'SCANS THIS WEEK', v: '218', d: '+18%' },
-        { pl: 'ODEBRANE NAGRODY', en: 'REWARDS REDEEMED', v: '96', d: '+31%' },
-        { pl: 'NOWI GOŚCIE', en: 'NEW GUESTS', v: '54', d: '+12%' },
-        { pl: 'ŚREDNI RACHUNEK', en: 'AVERAGE SPEND', v: '87 zł', d: '+6 zł' }
-      ].map((k, i) => ({ label: PL ? k.pl : k.en, value: k.v, trend: k.d, delay: (i * 60) + 'ms', trendFg: at })),
+      bizStats: (() => {
+        const s = st.bizLive || {};
+        return [
+          { pl: 'SKANY W TYM TYGODNIU', en: 'SCANS THIS WEEK', v: String(s.scansWeek || 0) },
+          { pl: 'ODEBRANE NAGRODY', en: 'REWARDS REDEEMED', v: String(s.couponsWeek || 0) },
+          { pl: 'NOWI GOŚCIE', en: 'NEW GUESTS', v: String(s.newGuests || 0) },
+          { pl: 'PRZYZNANE PUNKTY', en: 'POINTS AWARDED', v: String(s.pointsWeek || 0) }
+        ].map((k, i) => ({ label: PL ? k.pl : k.en, value: k.v,
+          trend: PL ? '7 dni' : '7 days', delay: (i * 60) + 'ms', trendFg: th.sub }));
+      })(),
       weekTitle: PL ? 'Skany dzień po dniu' : 'Scans day by day',
-      weekTotal: PL ? '218 skanów · 7 dni' : '218 scans · 7 days',
-      weekBars: [['Pn', 18], ['Wt', 24], ['Śr', 31], ['Cz', 44], ['Pt', 52], ['So', 29], ['Nd', 20]].map((b, i) => ({
-        day: PL ? b[0] : ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'][i],
-        h: Math.round((b[1] / 52) * 84) + 'px', val: String(b[1]), delay: (i * 70) + 'ms',
-        bg: b[1] >= 44 ? ac.hex : (th.dark ? ac.softDark : ac.soft), fg: b[1] >= 44 ? at : th.sub })),
+      weekTotal: (() => {
+        const n = (st.bizLive && st.bizLive.scansWeek) || 0;
+        if (!n) return PL ? 'Jeszcze nikt nie zeskanował naklejki' : 'Nobody has scanned the sticker yet';
+        return PL ? (n + ' skanów · 7 dni') : (n + ' scans · 7 days');
+      })(),
+      weekBars: (() => {
+        const dni = (st.bizLive && st.bizLive.days) || [];
+        if (!dni.length) return [];
+        const max = Math.max.apply(null, dni.map((d) => d.n).concat([1]));
+        return dni.map((d, i) => ({ day: PL ? d.pl : d.en,
+          h: Math.max(3, Math.round((d.n / max) * 84)) + 'px', val: String(d.n), delay: (i * 70) + 'ms',
+          bg: d.n === max && d.n > 0 ? ac.hex : (th.dark ? ac.softDark : ac.soft),
+          fg: d.n === max && d.n > 0 ? at : th.sub }));
+      })(),
       proLocked: st.plan === 'base' && !st.trial,
       lockVeil: th.dark ? 'rgba(20,22,26,0.72)' : 'rgba(244,242,237,0.76)',
       lockTitle: PL ? 'Godziny szczytu — w PRO' : 'Peak hours — on PRO',
@@ -4089,7 +4140,12 @@ bizEditMode: false,
       bizRegisterTabFg: st.bizLoginTab === 'register' ? '#FBFAF7' : 'var(--sub, #6C6F75)',
       tBizLoginTab: this.l3('Zaloguj się', 'Sign in', 'Accedi'),
       tBizRegisterTab: this.l3('Zarejestruj lokal', 'Register venue', 'Registra locale'),
-      loginBizDirect: () => this.setState({ phase: 'biz', biz: 'panel', bizAccount: true }),
+      loginBizDirect: () => {
+        this.setState({ phase: 'biz', biz: 'panel', bizAccount: true });
+        // Pulpit otwiera się na zakładce „dziś", więc liczby muszą już iść.
+        this.loadBizStats();
+        this.loadOffers();
+      },
       /* ══ ODTWARZACZ RELACJI ══ */
       ...(() => {
         const sv = (this.venues || []).filter((x) => x.id === st.storyOf)[0];

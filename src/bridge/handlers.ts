@@ -344,6 +344,47 @@ const bizOffers: Handler = async () => {
   };
 };
 
+/**
+ * Liczby do pulpitu firmy.
+ *
+ * Pulpit pokazywał „34 skany dziś", „218 w tygodniu" i słupki wpisane w kod.
+ * Teraz idą z bazy. Zniknął za to „średni rachunek" — TAPI nie widzi rachunków
+ * i nie ma z czego go policzyć; w jego miejsce wchodzą przyznane punkty,
+ * które są prawdziwe.
+ *
+ * Baza oddaje wyłącznie sumy: lokal ma widzieć, ilu gości przyszło, a nie kto.
+ */
+const bizStats: Handler = async () => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+  const moj = await mojLokal();
+  if ('error' in moj) return { error: moj.error };
+
+  const { data, error } = await supabase.rpc('venue_stats', { v: moj.venue.id });
+  if (error) return { error: error.message };
+
+  const s = (data ?? {}) as Record<string, any>;
+  const dni: Array<{ d: string; n: number }> = s.days ?? [];
+  const SKROT = { pl: ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So'], en: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] };
+
+  return {
+    stats: {
+      scansToday: Number(s.scansToday ?? 0),
+      scansWeek: Number(s.scansWeek ?? 0),
+      couponsWeek: Number(s.couponsWeek ?? 0),
+      newGuests: Number(s.newGuests ?? 0),
+      pointsWeek: Number(s.pointsWeek ?? 0),
+      days: dni.map((x) => {
+        const dzien = new Date(x.d + 'T12:00:00');
+        return { pl: SKROT.pl[dzien.getDay()], en: SKROT.en[dzien.getDay()], n: Number(x.n ?? 0) };
+      }),
+      feed: ((s.feed ?? []) as Array<{ time: string; kind: string }>).map((f) => ({
+        time: f.time,
+        kind: f.kind,
+      })),
+    },
+  };
+};
+
 /** Włączenie i wstrzymanie oferty. Pilnuje tego RLS na `coupons`. */
 const bizToggleOffer: Handler = async (p) => {
   if (!hasBackend) return { error: 'Brak połączenia z bazą' };
@@ -472,6 +513,7 @@ export const HANDLERS: Record<string, Handler> = {
   'stories.remove': storiesRemove,
 
   'biz.offers': bizOffers,
+  'biz.stats': bizStats,
   'biz.toggleOffer': bizToggleOffer,
 
   'rooms.join': roomsJoin,
