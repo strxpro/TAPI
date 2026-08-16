@@ -165,6 +165,36 @@ const dbEvents: Handler = async (p) => {
   return { events: (data ?? []).map((e) => wydarzenieNaWidok(e, wg.get(e.venue_id), od)) };
 };
 
+/**
+ * Miejsca, z których planer układa dzień.
+ *
+ * Kształt wraca taki, jakiego oczekuje widok: `venue` zamiast `venue_id`,
+ * `npl`/`nen` zamiast `note_pl`/`note_en`. Dzięki temu dołożenie atrakcji
+ * to wiersz w bazie, a nie przebudowa aplikacji.
+ */
+const dbSpots: Handler = async () => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+  const { data, error } = await supabase.from('spots').select('*').order('id');
+  if (error) return { error: error.message };
+
+  return {
+    spots: (data ?? []).map((s) => ({
+      id: s.id,
+      pl: s.pl,
+      en: s.en ?? s.pl,
+      it: s.it ?? s.en ?? s.pl,
+      tags: s.tags ?? [],
+      price: Number(s.price ?? 0),
+      dur: Number(s.dur ?? 60),
+      slot: s.slot,
+      area: s.area ?? '',
+      venue: s.venue_id ?? undefined,
+      npl: s.note_pl ?? '',
+      nen: s.note_en ?? s.note_pl ?? '',
+    })),
+  };
+};
+
 const dbToggleSaved: Handler = async (p) => {
   const venueId = str(p.venueId);
   const { data: u } = await supabase.auth.getUser();
@@ -280,6 +310,50 @@ const storiesMine: Handler = async () => {
   };
 };
 
+/* ─────────────────────────────────────────────────────────────── oferty ── */
+
+/**
+ * Kupony lokalu wraz z liczbą wykorzystań.
+ *
+ * Panel firmy pokazywał trzy oferty wpisane w kod, z wymyśloną liczbą „124 ×".
+ * Teraz idą z bazy, a licznik jest prawdziwy — liczony z `coupon_redemptions`.
+ */
+const bizOffers: Handler = async () => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+  const moj = await mojLokal();
+  if ('error' in moj) return { error: moj.error };
+
+  const { data, error } = await supabase
+    .from('coupons')
+    .select('id, title_pl, title_en, title_it, condition, max_uses, active, coupon_redemptions(count)')
+    .eq('venue_id', moj.venue.id)
+    .order('created_at');
+  if (error) return { error: error.message };
+
+  return {
+    offers: (data ?? []).map((c: Record<string, any>) => ({
+      id: c.id,
+      pl: c.title_pl,
+      en: c.title_en,
+      it: c.title_it,
+      condition: c.condition ?? '',
+      maxUses: c.max_uses ?? 0,
+      active: c.active === true,
+      taken: c.coupon_redemptions?.[0]?.count ?? 0,
+    })),
+  };
+};
+
+/** Włączenie i wstrzymanie oferty. Pilnuje tego RLS na `coupons`. */
+const bizToggleOffer: Handler = async (p) => {
+  if (!hasBackend) return { error: 'Brak połączenia z bazą' };
+  const { error } = await supabase
+    .from('coupons')
+    .update({ active: p.active === true })
+    .eq('id', str(p.id));
+  return error ? { error: error.message } : { ok: true };
+};
+
 const storiesRemove: Handler = async (p) => {
   if (!hasBackend) return { error: 'Brak połączenia z bazą' };
   const { error } = await supabase.from('stories').delete().eq('id', str(p.id));
@@ -389,12 +463,16 @@ export const HANDLERS: Record<string, Handler> = {
 
   'db.venues': dbVenues,
   'db.events': dbEvents,
+  'db.spots': dbSpots,
   'db.toggleSaved': dbToggleSaved,
 
   'stories.seen': storiesSeen,
   'stories.publish': storiesPublish,
   'stories.mine': storiesMine,
   'stories.remove': storiesRemove,
+
+  'biz.offers': bizOffers,
+  'biz.toggleOffer': bizToggleOffer,
 
   'rooms.join': roomsJoin,
   'rooms.mine': roomsMine,

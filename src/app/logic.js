@@ -498,6 +498,15 @@ class Component extends DCLogic {
       this.eventDefs = r.events;
       this.setState({ eventsSrc: 'baza' });
     }).catch(() => {});
+
+    // Atrakcje planera. Tu, inaczej niż przy wydarzeniach, pusta lista nie
+    // jest odpowiedzią — planer bez miejsc nie ułoży niczego, więc wolimy
+    // zostać przy wbudowanych.
+    window.TAPI.call('db.spots').then((r) => {
+      if (!r || r.error || !r.spots || !r.spots.length) return;
+      this.spots = r.spots;
+      this.setState({ spotsSrc: 'baza' });
+    }).catch(() => {});
   }
 
   /**
@@ -751,6 +760,9 @@ class Component extends DCLogic {
   goBiz(id, dir) {
     const a = this.bizOrder.indexOf(this.state.oTab), b = this.bizOrder.indexOf(id);
     if (b < 0 || a === b) return;
+    // Oferty pobieramy przy wejściu w zakładkę, a nie przy starcie aplikacji:
+    // gość, który nigdy nie otworzy panelu firmy, nie ma po co ich pobierać.
+    if (id === 'stories') this.loadOffers();
     this.setState({ oTab: id, navDir: dir || (b > a ? 1 : -1), dragX: 0, swiped: false });
     clearTimeout(this.bFlyT);
     this.setState({ bizFly: [Math.min(a, b), Math.max(a, b)] });
@@ -821,6 +833,20 @@ class Component extends DCLogic {
    * Do którego lokalu trafia, ustala serwer po właścicielu konta. Strona nie
    * podaje identyfikatora, więc nie ma czym podstawić cudzego.
    */
+  /** Oferty lokalu do panelu firmy. Woła się przy wejściu w zakładkę. */
+  loadOffers() {
+    this.onBridge(() => {
+      window.TAPI.call('biz.offers').then((r) => {
+        if (!r || r.error || !Array.isArray(r.offers)) return;
+        // Stan przełączników bierzemy z bazy — od tej chwili ekran i baza
+        // mówią to samo.
+        const stan = {};
+        r.offers.forEach((o) => { stan[o.id] = o.active !== false; });
+        this.setState({ bizOffers: r.offers, offerState: stan });
+      }).catch(() => {});
+    });
+  }
+
   publishStory() {
     if (this.state.storyBusy) return;
     const tresc = (this.state.storyDraft || '').trim();
@@ -3623,16 +3649,39 @@ bizEditMode: false,
         fg: (st.storyLife || 24) === o.h ? th.paper : th.sub,
         pick: () => this.setState({ storyLife: o.h }) })),
       genStory: () => this.publishStory(),
-      offers: [
-        { id: 'happy', name: st.lang === 'pl' ? 'Kieliszek frizzante gratis' : 'Free glass of frizzante', meta: '18:00 – 20:00', taken: '124' },
-        { id: 'story', name: st.lang === 'pl' ? 'Deska dla dwojga −25%' : 'Board for two −25%', meta: st.lang === 'pl' ? 'Weekendy' : 'Weekends', taken: '46' },
-        { id: 'vinyl', name: st.lang === 'pl' ? 'Winyl za punkty' : 'Vinyl for points', meta: st.lang === 'pl' ? 'Limit 12 szt.' : 'Limit 12', taken: '7' }
-      ].map((o, i) => {
-        const on = !!st.offerState[o.id];
-        return { name: o.name, meta: o.meta, taken: o.taken, delay: (i * 70) + 'ms',
+      // Oferty lokalu. Z bazy, gdy konto firmowe jest zalogowane; wpisane
+      // niżej służą już tylko za podgląd, gdy jeszcze nic nie przyszło.
+      // Licznik „×" jest prawdziwy — liczony z wykorzystanych kuponów.
+      offers: (st.bizOffers || [
+        { id: 'happy', pl: 'Kieliszek frizzante gratis', en: 'Free glass of frizzante', it: 'Calice di frizzante omaggio', condition: '18:00 – 20:00', taken: 0, active: true },
+        { id: 'story', pl: 'Deska dla dwojga −25%', en: 'Board for two −25%', it: 'Tagliere per due −25%', condition: st.lang === 'pl' ? 'Weekendy' : 'Weekends', taken: 0, active: true },
+        { id: 'vinyl', pl: 'Winyl za punkty', en: 'Vinyl for points', it: 'Vinile con i punti', condition: st.lang === 'pl' ? 'Limit 12 szt.' : 'Limit 12', taken: 0, active: false }
+      ]).map((o, i) => {
+        // Stan z ekranu ma pierwszeństwo tuż po przełączeniu, żeby przełącznik
+        // reagował od razu, nie dopiero po odpowiedzi z bazy.
+        const on = st.offerState && (o.id in st.offerState) ? !!st.offerState[o.id] : o.active !== false;
+        return {
+          name: st.lang === 'it' ? (o.it || o.en || o.pl) : (st.lang === 'pl' ? o.pl : (o.en || o.pl)),
+          meta: this.dt(o.condition || ''), taken: String(o.taken || 0), delay: (i * 70) + 'ms',
           state: on ? (st.lang === 'pl' ? 'aktywna' : 'active') : (st.lang === 'pl' ? 'wstrzymana' : 'paused'),
           stateFg: on ? at : th.sub, track: on ? ac.hex : th.hair, knob: on ? '18px' : '0px',
-          toggle: () => { const n = Object.assign({}, st.offerState); n[o.id] = !on; this.setState({ offerState: n }); } };
+          toggle: () => {
+            const n = Object.assign({}, st.offerState); n[o.id] = !on;
+            this.setState({ offerState: n });
+            this.buzz(10);
+            this.onBridge(() => {
+              window.TAPI.call('biz.toggleOffer', { id: o.id, active: !on }).then((r) => {
+                // Nieudany zapis cofa przełącznik — inaczej ekran pokazywałby
+                // stan, którego w bazie nie ma.
+                if (r && r.error) {
+                  const back = Object.assign({}, this.state.offerState); back[o.id] = on;
+                  this.setState({ offerState: back });
+                  this.toast(r.error);
+                }
+              }).catch(() => {});
+            });
+          }
+        };
       }),
       qr: (function () { const out = []; for (let i = 0; i < 144; i++) { const r = Math.floor(i / 12), c = i % 12;
         const corner = (r < 3 && c < 3) || (r < 3 && c > 8) || (r > 8 && c < 3);

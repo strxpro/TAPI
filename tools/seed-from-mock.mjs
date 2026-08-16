@@ -22,7 +22,7 @@ const src = readFileSync(resolve(here, '..', 'src', 'app', 'mock-data.js'), 'utf
 
 const window = {};
 new Function('window', src)(window);
-const { venues } = window.MOCK;
+const { venues, spots } = window.MOCK;
 
 /** Apostrof w SQL podwajamy — inaczej „Schindler's" urwie napis. */
 const q = (v) => (v == null ? 'null' : `'${String(v).split("'").join("''")}'`);
@@ -59,6 +59,20 @@ for (const v of venues) {
       `  values (${q(v.id)}, 'offer', ${q(title)}, ${q(when)}, now() + interval '30 days');`,
     );
   }
+}
+
+// Atrakcje planera. `venue` w danych testowych to skrót lokalu — w bazie
+// jest to klucz obcy, więc planer może podlinkować wizytówkę.
+const tablica = (a) => `array[${(a ?? []).map(q).join(', ')}]::text[]`;
+
+out.push('', 'delete from public.spots;');
+for (const s of spots) {
+  out.push(
+    `insert into public.spots (id, pl, en, it, tags, price, dur, slot, area, venue_id, note_pl, note_en) values (`,
+    `  ${q(s.id)}, ${q(s.pl)}, ${q(s.en)}, ${q(s.it)}, ${tablica(s.tags)},`,
+    `  ${s.price | 0}, ${s.dur | 0}, ${q(s.slot)}, ${q(s.area)}, ${q(s.venue ?? null)},`,
+    `  ${q(s.npl ?? null)}, ${q(s.nen ?? null)});`,
+  );
 }
 
 process.stdout.write(out.join('\n') + '\n');
